@@ -18,6 +18,9 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|features)/})
   gem.require_paths = ["lib"]
 
+  gem.add_dependency "activerecord", ">= 2.3.17"
+
+  gem.add_development_dependency "activerecord", "~> 3.0"
   gem.add_development_dependency "guard"
   gem.add_development_dependency "guard-minitest"
   gem.add_development_dependency "hashie"

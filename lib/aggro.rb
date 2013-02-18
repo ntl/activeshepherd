@@ -1,5 +1,5 @@
-require "aggro/version"
+Aggro = Module.new
 
-module Aggro
-  # Your code goes here...
-end
+require "aggro/aggregate"
+require "aggro/aggregate_root"
+require "aggro/version"
