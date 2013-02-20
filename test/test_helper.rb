@@ -6,6 +6,7 @@ require 'minitest/reporters'
 
 require 'minitest/autorun'
 
+require 'hashie'
 require 'pp'
 require 'pry'
 

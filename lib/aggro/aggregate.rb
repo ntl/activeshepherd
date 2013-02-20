@@ -1,21 +1,25 @@
 class Aggro::Aggregate
-  EXCLUDED_ATTRIBUTES = ["id"]
-
+  attr_reader :excluded_attributes
   attr_reader :model
 
-  def initialize(model)
+  def initialize(model, excluded_attributes = [])
     @model = model
+    @excluded_attributes = ["id", *Array.wrap(excluded_attributes)].map(&:to_s)
   end
 
   def changes
     {}.tap do |hash|
-      @model.changes.each { |k,v| hash[k.to_sym] = v }
+      @model.changes.each do |k,v|
+        hash[k.to_sym] = v unless excluded_attributes.include?(k.to_s)
+      end
 
-      each_traversable_association do |name, macro|
+      each_traversable_association do |name, macro, association_reflection|
+        foreign_key_to_self = association_reflection.foreign_key
+
         if macro == :has_many
           records = model.send(name).each
           record_changes = records.with_object({}).with_index do |(associated_model, list), index|
-            changes = ::Aggro::Aggregate.new(associated_model).changes
+            changes = ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).changes
             unless changes.empty?
               list[index] = changes
             end
@@ -24,10 +28,10 @@ class Aggro::Aggregate
           unless record_changes.empty?
             hash[name] = record_changes
           end
-        else
+        elsif macro == :has_one
           associated_model = model.send(name)
           if associated_model
-            changes = ::Aggro::Aggregate.new(associated_model).changes
+            changes = ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).changes
             unless changes.empty?
               hash[name] = changes
             end
@@ -37,7 +41,62 @@ class Aggro::Aggregate
     end
   end
 
+  def changes=(hash)
+    hash.each do |attribute_or_association_name, (before, after)|
+      association_reflection = model.class.reflect_on_association(attribute_or_association_name.to_sym)
+
+      if association_reflection.present?
+        if traverse_association?(association_reflection)
+          unless after.nil?
+            raise ::Aggro::AggregateRoot::BadChangeError
+          end
+
+          foreign_key_to_self = association_reflection.foreign_key
+
+          if association_reflection.macro == :has_many
+            association = model.send(association_reflection.name)
+
+            before.each do |index, changes_for_associated_model|
+              # FIXME
+              until association.size >= (index + 1)
+                association.build
+              end
+              # /FIXME
+
+              associated_model = association[index]
+
+              if associated_model.nil?
+                raise ::Aggro::AggregateRoot::BadChangeError, "Can't find record ##{index}"
+              end
+
+              ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
+            end
+            
+          elsif association_reflection.macro == :has_one
+            associated_model = model.send(association_reflection.name)
+            changes_for_associated_model = before
+            ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
+          end
+        end
+      else
+        getter = "#{attribute_or_association_name}"
+        setter = "#{attribute_or_association_name}="
+
+        current_value = model.send(getter)
+
+        unless current_value == before
+          raise ::Aggro::BadChangeError, "Expecting "
+            "`#{attribute_or_association_name} to be `#{before.inspect}', not "\
+            "`#{current_value.inspect}'"
+        end
+
+        model.send(setter, after)
+      end
+    end
+  end
+
   def get_via_association(association_reflection)
+    foreign_key_to_self = association_reflection.foreign_key
     model_or_collection_of_models = model.send(association_reflection.name)
 
     if model_or_collection_of_models.nil?
@@ -46,10 +105,10 @@ class Aggro::Aggregate
       # noop
     elsif association_reflection.macro == :has_many
       model_or_collection_of_models.to_a.select(&:present?).map do |associated_model|
-        ::Aggro::Aggregate.new(associated_model).state
+        ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).state
       end
     else
-      ::Aggro::Aggregate.new(model_or_collection_of_models).state
+      ::Aggro::Aggregate.new(model_or_collection_of_models, foreign_key_to_self).state
     end
   end
 
@@ -70,32 +129,31 @@ class Aggro::Aggregate
   end
 
   def state
-    HashWithIndifferentAccess.new.tap do |hash|
-      model.attributes.each do |attribute_name, value|
-        next if EXCLUDED_ATTRIBUTES.include?(attribute_name)
+    default_attributes = model.class.new.attributes
 
-        # FIXME: Is this nil check reasonable behavior?
-        if value.present?
+    {}.tap do |hash|
+      model.attributes.each do |attribute_name, value|
+        next if excluded_attributes.include?(attribute_name)
+
+        unless value == default_attributes[attribute_name]
           hash[attribute_name.to_sym] = value
         end
       end
 
-      model.class.reflect_on_all_associations.each do |association|
-        next unless traverse_association?(association)
-
-        serialized = get_via_association(association)
-        hash[association.name.to_sym] = serialized unless serialized.blank?
+      each_traversable_association do |name, macro, association_reflection|
+        serialized = get_via_association(association_reflection)
+        hash[name.to_sym] = serialized unless serialized.blank?
       end
     end
   end
 
   def state=(hash)
     hash.each do |attribute_or_association_name, value|
-      association = model.class.reflect_on_association(attribute_or_association_name.to_sym)
+      association_reflection = model.class.reflect_on_association(attribute_or_association_name.to_sym)
 
-      if association.present?
-        if traverse_association?(association)
-          set_via_association(association, value)
+      if association_reflection.present?
+        if traverse_association?(association_reflection)
+          set_via_association(association_reflection, value)
         end
       else
         setter = "#{attribute_or_association_name}="
@@ -110,7 +168,7 @@ private
     model.class.reflect_on_all_associations.select do |association|
       next unless traverse_association?(association)
 
-      yield(association.name.to_sym, association.macro)
+      yield(association.name.to_sym, association.macro, association)
     end
   end
 

@@ -41,7 +41,7 @@ module Aggro::AggregateRoot
   #
   # Returns all changes in the aggregate
   def aggregate_changes
-    aggro.aggregate_changes
+    aggro.changes
   end
 
   # Public: Injects the entire state of the aggregate from a serializable blob.

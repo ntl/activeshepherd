@@ -27,6 +27,7 @@ end
 
 ActiveRecord::Migration.create_table :project_todos, force: true do |t|
   t.string :text
+  t.integer :comments_count, default: 0, null: false
   t.belongs_to :todo_list
 end
 

@@ -1,10 +1,5 @@
 require 'test_helper'
 
-File.expand_path("../project_todo_scenario", __FILE__).tap do |scenario_root|
-  require "#{scenario_root}/migrate.rb"
-  require "#{scenario_root}/models.rb"
-end
-
 class IntegrationTest < MiniTest::Unit::TestCase
   def setup
     @owner      = User.create!(name: "Jane Owner")
@@ -28,7 +23,7 @@ class IntegrationTest < MiniTest::Unit::TestCase
             author_id: @owner.id,
             text: "Have this done by Monday",
           },{
-            author_id: @assignee_1,
+            author_id: @assignee_1.id,
             text: "I'll do my best",
           }],
         }],
