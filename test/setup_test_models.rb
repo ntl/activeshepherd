@@ -51,7 +51,7 @@ class Project < ActiveRecord::Base
 
   has_one :detail, inverse_of: :project, dependent: :destroy
 
-  has_many :todo_lists, validate: true, dependent: :destroy, inverse_of: :project
+  has_many :todo_lists, validate: true, dependent: :destroy, inverse_of: :project, autosave: true
   has_many :todos, through: :todo_lists # not part of aggregate
 
   has_one :recent_todo_list, class_name: "Project::TodoList",
@@ -64,14 +64,14 @@ end
 
 class Project::TodoList < ActiveRecord::Base
   belongs_to :project, inverse_of: :todo_lists
-  has_many :todos, validate: true, dependent: :destroy, inverse_of: :todo_list
+  has_many :todos, validate: true, dependent: :destroy, inverse_of: :todo_list, autosave: true
 
   accepts_nested_attributes_for :todos
 end
 
 class Project::Todo < ActiveRecord::Base
   belongs_to :todo_list, inverse_of: :todos
-  has_many :todo_assignments, inverse_of: :todo, dependent: :destroy
+  has_many :todo_assignments, inverse_of: :todo, dependent: :destroy, autosave: true
 
   has_many :assignees, through: :todo_assignments
   has_many :comments, inverse_of: :todo, foreign_key: "commentable_id"

@@ -116,6 +116,10 @@ class Aggro::Aggregate
     if association_reflection.macro == :has_many
       association = model.send(association_reflection.name)
 
+      association.each do |existing_associated_record|
+        existing_associated_record.mark_for_destruction
+      end
+
       value.each do |hash|
         associated_model = association.build
 

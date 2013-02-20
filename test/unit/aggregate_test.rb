@@ -28,6 +28,8 @@ class AggregateTest < MiniTest::Unit::TestCase
             author_id: 2,
             text: "I'll do my best",
           }],
+        },{
+          text: "Sweep the floor"
         }],
       }],
     }
@@ -164,8 +166,6 @@ class AggregateTest < MiniTest::Unit::TestCase
   end
 
   def test_applying_changes_shows_up_in_model_and_its_associations
-    build_persisted_state
-
     @aggregate.state = @state
     @project.save!
 
@@ -191,6 +191,30 @@ class AggregateTest < MiniTest::Unit::TestCase
   def test_state_setter_populates_object_graph
     @aggregate.state = @state
     assert_equal @state, @aggregate.state
+  end
+
+  def test_state_setter_marks_existing_associations_for_deletion
+    @aggregate.state = @state
+    @project.save
+
+    assert_equal 2, @project.todo_lists.first.todos.size
+
+    new_state = Marshal.load(Marshal.dump(@state))
+
+    new_state[:todo_lists].first[:todos].first.tap do |todo|
+      todo[:todo_assignments].pop
+      todo[:comments].pop
+      todo[:comments].unshift({author_id: 2, text: "Brand new comment"})
+    end
+
+    @aggregate.state = new_state
+    @project.save
+
+    @project.todo_lists.first.todos.first.tap do |todo|
+      assert_equal 1, todo.todo_assignments.size
+      assert_equal 2, todo.comments.size
+      assert_equal ["Brand new comment", "Have this done by Monday"], todo.comments.map(&:text)
+    end
   end
 
 private
