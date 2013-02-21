@@ -4,8 +4,8 @@
 guard 'minitest' do
   # with Minitest::Unit
   watch(%r|^test/(.*)\/?(.*)_test\.rb|)
-  watch(%r{^lib/aggro/(.*/)?([^/]+)\.rb$})  { |m| "test/unit/#{m[1]}#{m[2]}_test.rb" }
-  watch(%r{^lib/aggro.rb})            { "test" }
+  watch(%r{^lib/active_shepherd/(.*/)?([^/]+)\.rb$})  { |m| "test/unit/#{m[1]}#{m[2]}_test.rb" }
+  watch(%r{^lib/active_shepherd.rb})  { "test" }
   watch(%r|^test/test_helper\.rb|)    { "test" }
 
   watch(%r|^test/integration/project_todo_scenario/(.*)\.rb$|) do 

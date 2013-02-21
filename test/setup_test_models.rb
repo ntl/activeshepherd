@@ -46,7 +46,7 @@ class Comment < ActiveRecord::Base
 end
 
 class Project < ActiveRecord::Base
-  include Aggro::AggregateRoot
+  act_as_aggregate_root!
 
   belongs_to :owner, class_name: "User", readonly: true
 

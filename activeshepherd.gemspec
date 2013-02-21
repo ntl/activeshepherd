@@ -1,16 +1,16 @@
 # -*- encoding: utf-8 -*-
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'aggro/version'
+require 'active_shepherd/version'
 
 Gem::Specification.new do |gem|
-  gem.name          = "aggro"
-  gem.version       = Aggro::VERSION
+  gem.name          = "activeshepherd"
+  gem.version       = ActiveShepherd::VERSION
   gem.authors       = ["ntl"]
   gem.email         = ["nathanladd+github@gmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
+  gem.description   = %q{Wrangle unweildy app/models directories by unobtrusively adding the aggregate pattern into ActiveRecord}
+  gem.summary       = %q{Wrangle unweildy app/models directories with aggregates}
+  gem.homepage      = "http://github.com/ntl/eat_my_babies"
   gem.license       = "MIT"
 
   gem.files         = `git ls-files`.split($/)

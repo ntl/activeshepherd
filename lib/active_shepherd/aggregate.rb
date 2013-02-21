@@ -1,4 +1,4 @@
-class Aggro::Aggregate
+class ActiveShepherd::Aggregate
   attr_reader :excluded_attributes
   attr_reader :model
 
@@ -21,7 +21,7 @@ class Aggro::Aggregate
         if macro == :has_many
           records = model.send(name).each
           record_changes = records.with_object({}).with_index do |(associated_model, list), index|
-            changes = ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).changes
+            changes = ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes
             unless changes.empty?
               list[index] = changes
             end
@@ -33,7 +33,7 @@ class Aggro::Aggregate
         elsif macro == :has_one
           associated_model = model.send(name)
           if associated_model
-            changes = ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).changes
+            changes = ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes
             unless changes.empty?
               hash[name] = changes
             end
@@ -50,7 +50,7 @@ class Aggro::Aggregate
       if association_reflection.present?
         if traverse_association?(association_reflection)
           unless after.nil?
-            raise ::Aggro::AggregateRoot::BadChangeError
+            raise ::ActiveShepherd::AggregateRoot::BadChangeError
           end
 
           foreign_key_to_self = association_reflection.foreign_key
@@ -68,16 +68,16 @@ class Aggro::Aggregate
               associated_model = association[index]
 
               if associated_model.nil?
-                raise ::Aggro::AggregateRoot::BadChangeError, "Can't find record ##{index}"
+                raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Can't find record ##{index}"
               end
 
-              ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
+              ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
             end
             
           elsif association_reflection.macro == :has_one
             associated_model = model.send(association_reflection.name)
             changes_for_associated_model = before
-            ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
+            ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
           end
         end
       else
@@ -87,7 +87,7 @@ class Aggro::Aggregate
         current_value = model.send(getter)
 
         unless current_value == before
-          raise ::Aggro::BadChangeError, "Expecting "
+          raise ::ActiveShepherd::BadChangeError, "Expecting "
             "`#{attribute_or_association_name} to be `#{before.inspect}', not "\
             "`#{current_value.inspect}'"
         end
@@ -107,10 +107,10 @@ class Aggro::Aggregate
       # noop
     elsif association_reflection.macro == :has_many
       model_or_collection_of_models.to_a.select(&:present?).map do |associated_model|
-        ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).state
+        ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state
       end
     else
-      ::Aggro::Aggregate.new(model_or_collection_of_models, foreign_key_to_self).state
+      ::ActiveShepherd::Aggregate.new(model_or_collection_of_models, foreign_key_to_self).state
     end
   end
 
@@ -123,12 +123,12 @@ class Aggro::Aggregate
       value.each do |hash|
         associated_model = association.build
 
-        ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).state = hash
+        ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = hash
       end
     elsif association_reflection.macro == :has_one
       associated_model = model.send("build_#{association_reflection.name}")
 
-      ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).state = value
+      ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = value
     end
   end
 

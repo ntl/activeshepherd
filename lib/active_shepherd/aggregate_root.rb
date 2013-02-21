@@ -1,4 +1,4 @@
-module Aggro::AggregateRoot
+module ActiveShepherd::AggregateRoot
   AggregateMismatchError = Class.new(StandardError)
   BadChangeError         = Class.new(StandardError)
   InvalidChangesError    = Class.new(StandardError)
@@ -9,7 +9,7 @@ module Aggro::AggregateRoot
 
   # Private: returns the behind the scenes object that does all the work
   def aggro
-    @aggro ||= ::Aggro::Aggregate.new(self)
+    @aggro ||= ::ActiveShepherd::Aggregate.new(self)
   end
   private :aggro
   
@@ -21,12 +21,12 @@ module Aggro::AggregateRoot
   #   @project.aggregate_changes = { name: ["Clean House", "Clean My House"] }
   #
   # Returns nothing.
-  # Raises Aggro::BadChangeError if a particular attribute change is not a two
-  #   element array.
-  # Raises Aggro::InvalidChangesError if the changes supplied do not pass
-  #   #valid_aggregate_changes? (see below)
-  # Raises an Aggro::AggregateMismatchError if any objects in the aggregate are
-  #   being asked to change attributes that do not exist.
+  # Raises ActiveShepherd::BadChangeError if a particular attribute change is 
+  #   not a two element array.
+  # Raises ActiveShepherd::InvalidChangesError if the changes supplied do not
+  #   pass #valid_aggregate_changes? (see below)
+  # Raises an ActiveShepherd::AggregateMismatchError if any objects in the
+  #   aggregate are being asked to change attributes that do not exist.
   def aggregate_changes=(changes)
     aggro.changes = changes
   end
@@ -77,7 +77,7 @@ module Aggro::AggregateRoot
   #  * If I apply the changes, and then apply deep_reverse(changes), does
   #    #aggregate_state change?
   #
-  # See Aggro.deep_reverse
+  # See ActiveShepherd.deep_reverse
   #
   # Examples:
   # 
@@ -112,7 +112,7 @@ module Aggro::AggregateRoot
     #
     # Returns true if and only if this model is an aggregate root.
     def behave_like_an_aggregate?
-      ::Aggro::ClassValidator.new(self).valid?
+      ::ActiveShepherd::ClassValidator.new(self).valid?
     end
   end
 end
