@@ -206,15 +206,19 @@ class AggregateTest < MiniTest::Unit::TestCase
       todo[:comments].pop
       todo[:comments].unshift({author_id: 2, text: "Brand new comment"})
     end
+    new_state.delete(:detail)
 
     @aggregate.state = new_state
     @project.save
+    @project.reload
 
     @project.todo_lists.first.todos.first.tap do |todo|
       assert_equal 1, todo.todo_assignments.size
       assert_equal 2, todo.comments.size
       assert_equal ["Brand new comment", "Have this done by Monday"], todo.comments.map(&:text)
     end
+
+    assert_nil @project.detail
   end
 
 private

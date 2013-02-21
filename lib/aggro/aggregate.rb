@@ -116,10 +116,6 @@ class Aggro::Aggregate
     if association_reflection.macro == :has_many
       association = model.send(association_reflection.name)
 
-      association.each do |existing_associated_record|
-        existing_associated_record.mark_for_destruction
-      end
-
       value.each do |hash|
         associated_model = association.build
 
@@ -152,6 +148,8 @@ class Aggro::Aggregate
   end
 
   def state=(hash)
+    mark_all_associated_objects_for_destruction
+
     hash.each do |attribute_or_association_name, value|
       association_reflection = model.class.reflect_on_association(attribute_or_association_name.to_sym)
 
@@ -181,6 +179,16 @@ private
     return false if association.macro == :belongs_to
 
     true
+  end
+
+  def mark_all_associated_objects_for_destruction
+    each_traversable_association do |name, macro, reflection|
+      if macro == :has_many
+        model.send(name).each { |record| record.mark_for_destruction }
+      elsif macro == :has_one
+        model.send(name).try(&:mark_for_destruction)
+      end
+    end
   end
 
 end

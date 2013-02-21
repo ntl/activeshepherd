@@ -49,7 +49,7 @@ class Project < ActiveRecord::Base
 
   belongs_to :owner, class_name: "User", readonly: true
 
-  has_one :detail, inverse_of: :project, dependent: :destroy
+  has_one :detail, inverse_of: :project, dependent: :destroy, autosave: true
 
   has_many :todo_lists, validate: true, dependent: :destroy, inverse_of: :project, autosave: true
   has_many :todos, through: :todo_lists # not part of aggregate
@@ -64,7 +64,7 @@ end
 
 class Project::TodoList < ActiveRecord::Base
   belongs_to :project, inverse_of: :todo_lists
-  has_many :todos, validate: true, dependent: :destroy, inverse_of: :todo_list, autosave: true
+  has_many :todos, validate: true, dependent: :destroy, inverse_of: :todo_list
 
   accepts_nested_attributes_for :todos
 end
