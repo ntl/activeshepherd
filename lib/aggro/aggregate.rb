@@ -4,7 +4,9 @@ class Aggro::Aggregate
 
   def initialize(model, excluded_attributes = [])
     @model = model
-    @excluded_attributes = ["id", *Array.wrap(excluded_attributes)].map(&:to_s)
+
+    @excluded_attributes = ["id", "created_at", "updated_at"]
+    @excluded_attributes.concat(Array.wrap(excluded_attributes).map(&:to_s))
   end
 
   def changes
@@ -113,18 +115,20 @@ class Aggro::Aggregate
   end
 
   def set_via_association(association_reflection, value)
+    foreign_key_to_self = association_reflection.foreign_key
+
     if association_reflection.macro == :has_many
       association = model.send(association_reflection.name)
 
       value.each do |hash|
         associated_model = association.build
 
-        ::Aggro::Aggregate.new(associated_model).state = hash
+        ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).state = hash
       end
     elsif association_reflection.macro == :has_one
       associated_model = model.send("build_#{association_reflection.name}")
 
-      ::Aggro::Aggregate.new(associated_model).state = value
+      ::Aggro::Aggregate.new(associated_model, foreign_key_to_self).state = value
     end
   end
 
@@ -149,6 +153,18 @@ class Aggro::Aggregate
 
   def state=(hash)
     mark_all_associated_objects_for_destruction
+
+    default_attributes = model.class.new.attributes
+    ignored_attribute_names = hash.keys.map(&:to_s) + excluded_attributes
+
+    (default_attributes.keys - ignored_attribute_names).each do |attribute_name|
+      current_value = model.attributes[attribute_name]
+      default_value = default_attributes[attribute_name]
+
+      next if default_value == current_value
+
+      model.send("#{attribute_name}=", default_value)
+    end
 
     hash.each do |attribute_or_association_name, value|
       association_reflection = model.class.reflect_on_association(attribute_or_association_name.to_sym)

@@ -221,6 +221,26 @@ class AggregateTest < MiniTest::Unit::TestCase
     assert_nil @project.detail
   end
 
+  def test_state_setter_resets_unsupplied_attributes_to_default
+    @aggregate.state = @state.merge(status: 5)
+    @project.save
+
+    new_state = Marshal.load(Marshal.dump(@state))
+    new_state.delete(:status)
+
+    @aggregate.state = new_state
+
+    assert_equal Project.new.status, @project.status
+  end
+
+  def state_setter_can_set_timestamps
+    timestamp = (1.year.ago - 15.seconds)
+
+    @project.state = { created_at: timestamp, updated_at: timestamp + 14.days }
+    assert_equal timestamp, @project.created_at
+    assert_equal timestamp + 14.days, @project.updated_at
+  end
+
 private
 
   # Test 'changes' behavior with this common background

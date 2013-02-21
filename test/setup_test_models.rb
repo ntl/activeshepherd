@@ -12,6 +12,7 @@ end
 ActiveRecord::Migration.create_table :projects, force: true do |t|
   t.string :name
   t.belongs_to :owner
+  t.integer :status, default: 1, null: false
   t.timestamps
 end
 
