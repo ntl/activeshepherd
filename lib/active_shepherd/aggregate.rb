@@ -87,7 +87,7 @@ class ActiveShepherd::Aggregate
         current_value = model.send(getter)
 
         unless current_value == before
-          raise ::ActiveShepherd::BadChangeError, "Expecting "
+          raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Expecting "\
             "`#{attribute_or_association_name} to be `#{before.inspect}', not "\
             "`#{current_value.inspect}'"
         end
