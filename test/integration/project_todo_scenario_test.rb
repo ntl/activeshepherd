@@ -4,7 +4,7 @@ class IntegrationTest < MiniTest::Unit::TestCase
   def setup
     Project.destroy_all
 
-    @project   = Project.new
+    @project = Project.new
 
     @state = {
       name:     "Clean House",
@@ -42,7 +42,7 @@ class IntegrationTest < MiniTest::Unit::TestCase
         0 => {
           todos: {
             0 => { text: ["Take out the trash", "Take out my trash"] },
-            2 => { text: [nil, "Another task!"] },
+            2 => { text: [nil, "Another task!"], _create: '1' },
           },
         },
       },
@@ -150,7 +150,7 @@ class IntegrationTest < MiniTest::Unit::TestCase
 
     @project.todo_lists.build
 
-    assert_equal({}, @project.aggregate_changes)
+    assert_equal({todo_lists: { 1 => {_create: '1' }}}, @project.aggregate_changes)
   end
 
   def test_all_changes_to_associated_objects_show_up_in_aggregate_changes
@@ -165,6 +165,8 @@ class IntegrationTest < MiniTest::Unit::TestCase
   end
 
   def test_applying_changes_shows_up_in_model_and_its_associations
+    build_persisted_state
+
     @project.aggregate_state = @state
     @project.save!
 
@@ -179,6 +181,26 @@ class IntegrationTest < MiniTest::Unit::TestCase
     assert_equal "I need to clean my house", @project.detail.description
     assert_equal "Take out my trash", @project.todo_lists.first.todos.first.text
     assert_equal 3, @project.todo_lists.first.todos.size
+  end
+
+  def test_applying_reverse_changes_invokes_apply_change_on_the_reverse_hash
+    build_persisted_state
+
+    @project.aggregate_changes = @changes
+    @project.save!
+
+    assert_equal "Clean My House", @project.name
+    assert_equal "I need to clean my house", @project.detail.description
+    assert_equal "Take out my trash", @project.todo_lists.first.todos.first.text
+    assert_equal 3, @project.todo_lists.first.todos.size
+
+    @project.reverse_aggregate_changes = @changes
+    @project.save!
+
+    assert_equal "Clean House", @project.name
+    assert_equal "I need to clean the house", @project.detail.description
+    assert_equal "Take out the trash", @project.todo_lists.first.todos.first.text
+    assert_equal 2, @project.todo_lists.first.todos.size
   end
 
   def test_state_getter_symbolizes_all_keys
@@ -257,5 +279,22 @@ private
     @project.save
 
     assert_equal({}, @project.aggregate_changes)
+  end
+
+  def reverse_changes
+    @changes = {
+      name: ["Clean My House", "Clean House"],
+      detail: {
+        description: ["I need to clean my house", "I need to clean the house"],
+      },
+      todo_lists: {
+        0 => {
+          todos: {
+            0 => { text: ["Take out my trash", "Take out the trash"] },
+            2 => { _destroy: '1' },
+          },
+        },
+      },
+    }
   end
 end

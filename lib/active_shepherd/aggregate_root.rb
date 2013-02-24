@@ -31,6 +31,11 @@ module ActiveShepherd::AggregateRoot
     aggro.changes = changes
   end
 
+  # Public: Reverses the effect of #aggregate_changes=
+  def reverse_aggregate_changes=(changes)
+    self.aggregate_changes = ::ActiveShepherd::DeepReverseChanges.new(changes).reverse
+  end
+
   # Public: Returns the list of changes to the aggregate that would persist if
   # #save were called on the aggregate root.
   #

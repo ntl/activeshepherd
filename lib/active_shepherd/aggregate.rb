@@ -11,6 +11,12 @@ class ActiveShepherd::Aggregate
 
   def changes
     {}.tap do |hash|
+      if !@model.persisted?
+        hash[:_create] = '1'
+      elsif @model.marked_for_destruction?
+        hash[:_destroy] = '1'
+      end
+
       @model.changes.each do |k,v|
         hash[k.to_sym] = v unless excluded_attributes.include?(k.to_s)
       end
@@ -80,6 +86,9 @@ class ActiveShepherd::Aggregate
             ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
           end
         end
+      elsif attribute_or_association_name.to_s == "_create"
+      elsif attribute_or_association_name.to_s == "_destroy"
+        model.mark_for_destruction
       else
         getter = "#{attribute_or_association_name}"
         setter = "#{attribute_or_association_name}="
