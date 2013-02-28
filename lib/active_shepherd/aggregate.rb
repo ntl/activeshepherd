@@ -18,6 +18,13 @@ class ActiveShepherd::Aggregate
       end
 
       @model.changes.each do |k,v|
+        v_or_attribute = @model.attributes_before_type_cast[k]
+        if v_or_attribute.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
+          v.map! do |untypecasted_value|
+            v_or_attribute.coder.dump(untypecasted_value)
+          end
+        end
+
         hash[k.to_sym] = v unless excluded_attributes.include?(k.to_s)
       end
 
@@ -93,8 +100,14 @@ class ActiveShepherd::Aggregate
         getter = "#{attribute_or_association_name}"
         setter = "#{attribute_or_association_name}="
 
-        current_value = model.send(getter)
+        current_value = @model.send(getter)
 
+        attribute = @model.attributes_before_type_cast[getter]
+        if attribute.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
+          before = attribute.coder.load(before)
+          after = attribute.coder.load(after)
+        end
+ 
         unless current_value == before
           raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Expecting "\
             "`#{attribute_or_association_name} to be `#{before.inspect}', not "\
@@ -145,8 +158,13 @@ class ActiveShepherd::Aggregate
     default_attributes = model.class.new.attributes
 
     {}.tap do |hash|
-      model.attributes.each do |attribute_name, value|
+      model.attributes_before_type_cast.each do |attribute_name, value|
         next if excluded_attributes.include?(attribute_name)
+
+        if value.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
+          attribute = value
+          value = attribute.coder.dump(attribute.value)
+        end
 
         unless value == default_attributes[attribute_name]
           hash[attribute_name.to_sym] = value
@@ -163,12 +181,16 @@ class ActiveShepherd::Aggregate
   def state=(hash)
     mark_all_associated_objects_for_destruction
 
-    default_attributes = model.class.new.attributes
+    default_attributes = HashWithIndifferentAccess.new(model.class.new.attributes_before_type_cast)
     ignored_attribute_names = hash.keys.map(&:to_s) + excluded_attributes
 
     (default_attributes.keys - ignored_attribute_names).each do |attribute_name|
       current_value = model.attributes[attribute_name]
       default_value = default_attributes[attribute_name]
+      # FIXME: don't know what would happen if we had a serialized attribute default to non-blank
+      if default_value.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
+        default_value = default_value.coder.load(default_value.value)
+      end
 
       next if default_value == current_value
 
@@ -183,7 +205,12 @@ class ActiveShepherd::Aggregate
           set_via_association(association_reflection, value)
         end
       else
-        setter = "#{attribute_or_association_name}="
+        attribute_name = attribute_or_association_name
+        setter = "#{attribute_name}="
+        default_value = default_attributes[attribute_name]
+        if default_value.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
+          value = default_value.coder.load(value)
+        end
         model.send(setter, value)
       end
     end

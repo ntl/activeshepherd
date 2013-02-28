@@ -262,6 +262,37 @@ class IntegrationTest < MiniTest::Unit::TestCase
     assert_equal timestamp + 14.days, @project.updated_at
   end
 
+  def test_state_getter_respects_serialized_attributes
+    @project.fruit = :apple
+    assert_equal 'ELPPA', @project.aggregate_state[:fruit]
+  end
+
+  def test_state_setter_respects_serialized_attributes
+    @project.aggregate_state = @state
+    assert_equal nil, @project.fruit
+
+    @state[:fruit] = 'EGNARO'
+    @project.aggregate_state = @state
+    assert_equal :orange, @project.fruit
+  end
+
+  def test_state_changes_getter_and_setter_respect_serialized_attributes
+    build_persisted_state
+
+    @project.fruit = :banana
+    assert_equal [nil, 'ANANAB'], @project.aggregate_changes[:fruit]
+    @project.save!
+    assert_equal :banana, @project.reload.fruit
+
+    @project.fruit = :pear
+    assert_equal ['ANANAB', 'RAEP'], @project.aggregate_changes[:fruit]
+
+    @project.reload
+    assert_equal :banana, @project.fruit
+    @project.aggregate_changes = { fruit: [ 'ANANAB', 'OGNAM'] }
+    assert_equal :mango, @project.fruit
+  end
+
 private
 
   # Test 'changes' behavior with this common background

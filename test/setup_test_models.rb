@@ -13,6 +13,7 @@ ActiveRecord::Migration.create_table :projects, force: true do |t|
   t.string :name
   t.belongs_to :owner
   t.integer :status, default: 1, null: false
+  t.string :fruit
   t.timestamps
 end
 
@@ -57,6 +58,19 @@ class Project < ActiveRecord::Base
 
   has_one :recent_todo_list, class_name: "Project::TodoList",
     order: "updated_at DESC", readonly: true
+
+  FruitSerializer = Class.new do
+    def self.dump(fruit)
+      return nil if fruit.nil?
+      fruit.to_s.reverse.upcase
+    end
+
+    def self.load(blob)
+      return nil if blob.nil?
+      blob.reverse.downcase.to_sym
+    end
+  end
+  serialize :fruit, FruitSerializer
 end
 
 class Project::Detail < ActiveRecord::Base
