@@ -19,10 +19,8 @@ class ActiveShepherd::Aggregate
 
       @model.changes.each do |k,v|
         v_or_attribute = @model.attributes_before_type_cast[k]
-        if v_or_attribute.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
-          v.map! do |untypecasted_value|
-            v_or_attribute.coder.dump(untypecasted_value)
-          end
+        v.map! do |possible_serialized_value|
+          serialize_value(k, possible_serialized_value)
         end
 
         hash[k.to_sym] = v unless excluded_attributes.include?(k.to_s)
@@ -97,16 +95,13 @@ class ActiveShepherd::Aggregate
       elsif attribute_or_association_name.to_s == "_destroy"
         model.mark_for_destruction
       else
-        getter = "#{attribute_or_association_name}"
+        attribute_name = attribute_or_association_name
         setter = "#{attribute_or_association_name}="
 
-        current_value = @model.send(getter)
+        current_value = @model.send(attribute_name)
 
-        attribute = @model.attributes_before_type_cast[getter]
-        if attribute.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
-          before = attribute.coder.load(before)
-          after = attribute.coder.load(after)
-        end
+        before = deserialize_value(attribute_name, before)
+        after  = deserialize_value(attribute_name, after)
  
         unless current_value == before
           raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Expecting "\
@@ -161,10 +156,7 @@ class ActiveShepherd::Aggregate
       model.attributes_before_type_cast.each do |attribute_name, value|
         next if excluded_attributes.include?(attribute_name)
 
-        if value.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
-          attribute = value
-          value = attribute.coder.dump(attribute.value)
-        end
+        value = serialize_value(attribute_name, value)
 
         unless value == default_attributes[attribute_name]
           hash[attribute_name.to_sym] = value
@@ -181,15 +173,15 @@ class ActiveShepherd::Aggregate
   def state=(hash)
     mark_all_associated_objects_for_destruction
 
-    default_attributes = HashWithIndifferentAccess.new(model.class.new.attributes_before_type_cast)
+    default_attributes = model.class.new.attributes
     ignored_attribute_names = hash.keys.map(&:to_s) + excluded_attributes
 
     (default_attributes.keys - ignored_attribute_names).each do |attribute_name|
       current_value = model.attributes[attribute_name]
       default_value = default_attributes[attribute_name]
-      # FIXME: don't know what would happen if we had a serialized attribute default to non-blank
-      if default_value.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
-        default_value = default_value.coder.load(default_value.value)
+
+      unless deserialize_value(attribute_name, default_value) == default_value
+        raise 'Have not handled this use case yet; serialized attributes with a default value'
       end
 
       next if default_value == current_value
@@ -207,16 +199,29 @@ class ActiveShepherd::Aggregate
       else
         attribute_name = attribute_or_association_name
         setter = "#{attribute_name}="
-        default_value = default_attributes[attribute_name]
-        if default_value.is_a?(ActiveRecord::AttributeMethods::Serialization::Attribute)
-          value = default_value.coder.load(value)
-        end
-        model.send(setter, value)
+        model.send(setter, deserialize_value(attribute_name, value))
       end
     end
   end
 
 private
+
+  def serialize_value(attribute_name, value)
+    run_through_serializer(attribute_name, value, :dump)
+  end
+
+  def deserialize_value(attribute_name, value)
+    run_through_serializer(attribute_name, value, :load)
+  end
+
+  def run_through_serializer(attribute_name, value, method)
+    serializer = model.class.serialized_attributes[attribute_name.to_s]
+    if serializer
+      serializer.send(method, value)
+    else
+      value
+    end
+  end
 
   def each_traversable_association
     model.class.reflect_on_all_associations.select do |association|

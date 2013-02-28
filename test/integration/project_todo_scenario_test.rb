@@ -123,6 +123,8 @@ class IntegrationTest < MiniTest::Unit::TestCase
     refute_equal "Joe Schmoe", @project.owner.try(:name)
   end
 
+=begin
+  # FIXME: rails 4 is removing read only associations
   def test_state_getter_does_not_walk_read_only_associations
     @project.todo_lists.build.tap do |todo_list|
       todo_list.todos.build({ text: "Hi" })
@@ -132,17 +134,18 @@ class IntegrationTest < MiniTest::Unit::TestCase
     assert_nil @project.aggregate_state[:recent_todo_list]
   end
 
+  def test_state_setter_does_not_walk_read_only_associations
+    @project.aggregate_state = { recent_todo_list: {} }
+
+    assert_nil @project.recent_todo_list
+  end
+=end
+
   def test_state_getter_ignores_foreign_key_relationship_to_parent_object
     @project.save
     @project.build_detail({ description: "Foo" })
 
     assert_equal({ description: "Foo" }, @project.aggregate_state[:detail])
-  end
-
-  def test_state_setter_does_not_walk_read_only_associations
-    @project.aggregate_state = { recent_todo_list: {} }
-
-    assert_nil @project.recent_todo_list
   end
 
   def test_changes_getter_ignores_foreign_key_relationship_to_parent_object

@@ -49,15 +49,15 @@ end
 class Project < ActiveRecord::Base
   act_as_aggregate_root!
 
-  belongs_to :owner, class_name: "User", readonly: true
+  belongs_to :owner, class_name: "User"
 
   has_one :detail, inverse_of: :project, dependent: :destroy, autosave: true
 
   has_many :todo_lists, validate: true, dependent: :destroy, inverse_of: :project, autosave: true
   has_many :todos, through: :todo_lists # not part of aggregate
 
-  has_one :recent_todo_list, class_name: "Project::TodoList",
-    order: "updated_at DESC", readonly: true
+  has_one :recent_todo_list, ->{ order("updated_at DESC") },
+    class_name: "Project::TodoList"
 
   FruitSerializer = Class.new do
     def self.dump(fruit)
@@ -96,13 +96,13 @@ end
 
 class Project::TodoAssignment < ActiveRecord::Base
   belongs_to :todo, inverse_of: :todo_assignments
-  belongs_to :assignee, class_name: "User", readonly: true
+  belongs_to :assignee, class_name: "User"
 end
 
 class Project::Comment < Comment
   belongs_to :todo, foreign_key: "commentable_id", inverse_of: :comments
 
-  default_scope where({ commentable_type: "Project::Todo" })
+  default_scope { where({ commentable_type: "Project::Todo" }) }
 end
 
 
