@@ -74,8 +74,6 @@ class ActiveShepherd::QueryMethod < ActiveShepherd::Method
     @query = {}
   end
 
-private
-
   def setup
     @associations = aggregate.traversable_associations
   end
@@ -91,8 +89,6 @@ class ActiveShepherd::ApplyMethod < ActiveShepherd::Method
   def destroy?
     meta_action == :_destroy
   end
-
-private
 
   def setup(hash)
     hash.each do |key, value|

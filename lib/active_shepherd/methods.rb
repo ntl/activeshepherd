@@ -105,6 +105,16 @@ class ActiveShepherd::Methods
       query[reflection.name] = changes unless changes.blank?
     end
 
+    def setup
+      super
+      @attributes = aggregate.model.changes.each_with_object({}) do |(name,changes),h|
+        next if aggregate.excluded_attributes.include? name.to_s
+        h[name.to_sym] = changes.map do |raw_value|
+          aggregate.serialize_value name, raw_value
+        end
+      end
+    end
+
   private
 
     def get_changes_from_associated_model(model, foreign_key)
@@ -116,16 +126,6 @@ class ActiveShepherd::Methods
         query[:_create] = '1'
       elsif aggregate.model.marked_for_destruction?
         query[:_destroy] = '1'
-      end
-    end
-
-    def setup
-      super
-      @attributes = aggregate.model.changes.each_with_object({}) do |(name,changes),h|
-        next if aggregate.excluded_attributes.include? name.to_s
-        h[name.to_sym] = changes.map do |raw_value|
-          aggregate.serialize_value name, raw_value
-        end
       end
     end
   end
@@ -159,12 +159,6 @@ class ActiveShepherd::Methods
       end
     end
 
-  private
-
-    def get_state_from_associated_model(model, foreign_key)
-      ActiveShepherd::Aggregate.new(model, foreign_key).state
-    end
-
     def setup
       super
       @attributes = aggregate.raw_attributes.each_with_object({}) do |(name,raw),h|
@@ -174,6 +168,12 @@ class ActiveShepherd::Methods
           h[name.to_sym] = value
         end
       end
+    end
+
+  private
+
+    def get_state_from_associated_model(model, foreign_key)
+      ActiveShepherd::Aggregate.new(model, foreign_key).state
     end
   end
 
