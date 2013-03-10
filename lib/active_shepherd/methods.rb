@@ -1,7 +1,7 @@
 class ActiveShepherd::Methods
   class ApplyChanges < ActiveShepherd::ApplyMethod
     def apply_changes
-      handle_create_or_destroy_keys
+      aggregate.model.mark_for_destruction if destroy?
       traverse!
     end
 
@@ -60,10 +60,6 @@ class ActiveShepherd::Methods
 
     def apply_changes_to_associated_model(model, foreign_key, changes)
       ActiveShepherd::Aggregate.new(model, foreign_key).changes = changes
-    end
-
-    def handle_create_or_destroy_keys
-      aggregate.model.mark_for_destruction if destroy?
     end
   end
 
