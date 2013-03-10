@@ -22,7 +22,7 @@ class ActiveShepherd::Aggregate
   end
 
   def state
-    ActiveShepherd::State.new(self).state
+    ActiveShepherd::State.state(self)
   end
 
   def traversable_associations

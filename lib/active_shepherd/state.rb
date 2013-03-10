@@ -16,6 +16,10 @@ class ActiveShepherd::State
     hash
   end
 
+  def self.state(aggregate)
+    new(aggregate).state
+  end
+
 private
 
   def add_state_from_root_model
