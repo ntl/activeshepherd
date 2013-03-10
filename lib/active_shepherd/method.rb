@@ -77,6 +77,15 @@ class ActiveShepherd::QueryMethod < ActiveShepherd::Method
 private
 
   def setup
+    @attributes = aggregate.raw_attributes.each_with_object({}) do |(name,raw),h|
+      next if aggregate.excluded_attributes.include? name
+      value = aggregate.serialize_value name, raw
+      unless value == aggregate.default_attributes[name]
+        h[name.to_sym] = value
+      end
+    end
+
+    @associations = aggregate.traversable_associations
   end
 end
 
