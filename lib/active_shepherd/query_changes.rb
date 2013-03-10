@@ -1,28 +1,27 @@
 class ActiveShepherd::QueryChanges < ActiveShepherd::StateMethod
   def query_changes
-    set_create_or_destroy_keys
-    get_changes_from_root_model
-    get_changes_from_associations
-    hash
+    hash.update get_create_or_destroy_keys
+    hash.update get_changes_from_root_model
+    hash.update get_changes_from_associations
   end
 
 private
 
   def get_changes_from_root_model
-    aggregate.model.changes.each do |k,v|
+    aggregate.model.changes.each_with_object({}) do |(k,v),h|
       v_or_attribute = aggregate.model.attributes_before_type_cast[k]
       v.map! do |possible_serialized_value|
         aggregate.serialize_value(k, possible_serialized_value)
       end
 
-      hash[k.to_sym] = v unless aggregate.excluded_attributes.include?(k.to_s)
+      h[k.to_sym] = v unless aggregate.excluded_attributes.include?(k.to_s)
     end
   end
 
   def get_changes_from_associations
-    aggregate.traversable_associations.each do |name, association_reflection|
+    aggregate.traversable_associations.each_with_object({}) do |(name, association_reflection), h|
       changes = get_changes_from_association association_reflection
-      hash[name.to_sym] = changes unless changes.blank?
+      h[name.to_sym] = changes unless changes.blank?
     end
   end
 
@@ -53,11 +52,13 @@ private
     ActiveShepherd::Aggregate.new(model, foreign_key).changes
   end
 
-  def set_create_or_destroy_keys
+  def get_create_or_destroy_keys
     if not aggregate.model.persisted?
-      create!
+      { _create: '1' }
     elsif aggregate.model.marked_for_destruction?
-      destroy!
+      { _destroy: '1' }
+    else
+      {}
     end
   end
 end
