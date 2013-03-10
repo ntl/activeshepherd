@@ -25,7 +25,7 @@ class ActiveShepherd::ApplyChanges
   end
 
   def self.apply_changes(aggregate, hash)
-    new(aggregate).apply_changes(hash)
+    new(aggregate, hash).apply_changes
   end
 
 private

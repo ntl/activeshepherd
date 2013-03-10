@@ -65,24 +65,6 @@ class ActiveShepherd::Aggregate
     end
   end
 
-  def set_via_association(association_reflection, value)
-    foreign_key_to_self = association_reflection.foreign_key
-
-    if association_reflection.macro == :has_many
-      association = model.send(association_reflection.name)
-
-      value.each do |hash|
-        associated_model = association.build
-
-        ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = hash
-      end
-    elsif association_reflection.macro == :has_one
-      associated_model = model.send("build_#{association_reflection.name}")
-
-      ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = value
-    end
-  end
-
   def state
     default_attributes = model.class.new.attributes
 
@@ -101,6 +83,24 @@ class ActiveShepherd::Aggregate
         serialized = get_via_association(association_reflection)
         hash[name.to_sym] = serialized unless serialized.blank?
       end
+    end
+  end
+
+  def set_via_association(association_reflection, value)
+    foreign_key_to_self = association_reflection.foreign_key
+
+    if association_reflection.macro == :has_many
+      association = model.send(association_reflection.name)
+
+      value.each do |hash|
+        associated_model = association.build
+
+        ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = hash
+      end
+    elsif association_reflection.macro == :has_one
+      associated_model = model.send("build_#{association_reflection.name}")
+
+      ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = value
     end
   end
 
