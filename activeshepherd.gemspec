@@ -25,6 +25,8 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency "guard-minitest"
   gem.add_development_dependency "hashie"
   gem.add_development_dependency "minitest-reporters"
+  gem.add_development_dependency "pry"
+  gem.add_development_dependency "pry-debugger"
   gem.add_development_dependency "rake"
   gem.add_development_dependency "rb-fsevent"
   gem.add_development_dependency "sqlite3"
