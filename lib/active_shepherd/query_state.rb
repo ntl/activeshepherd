@@ -1,11 +1,7 @@
 class ActiveShepherd::QueryState < ActiveShepherd::StateMethod
   def query_state
     get_state_from_root_model
-
-    aggregate.traversable_associations.each do |name, association_reflection|
-      get_state_from_association name, association_reflection
-    end
-
+    get_state_from_associations
     hash
   end
 
@@ -20,6 +16,12 @@ private
       unless value == aggregate.default_attributes[attribute_name]
         hash[attribute_name.to_sym] = value
       end
+    end
+  end
+
+  def get_state_from_associations
+    aggregate.traversable_associations.each do |name, association_reflection|
+      get_state_from_association name, association_reflection
     end
   end
 
