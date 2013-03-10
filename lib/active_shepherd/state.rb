@@ -7,7 +7,7 @@ class ActiveShepherd::State
   end
 
   def state
-    default_attributes = aggregate.model.class.new.attributes
+    default_attributes = aggregate.default_attributes
 
     {}.tap do |hash|
       aggregate.model.attributes_before_type_cast.each do |attribute_name, value|
