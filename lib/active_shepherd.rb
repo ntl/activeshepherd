@@ -1,6 +1,7 @@
 module ActiveShepherd ; end
 
-require 'active_shepherd/state_method'
+require 'active_shepherd/method'
+require 'active_shepherd/apply_method'
 
 require 'active_shepherd/active_record_shim'
 require 'active_shepherd/aggregate'
