@@ -1,9 +1,9 @@
 class ActiveShepherd::QueryState < ActiveShepherd::StateMethod
   def query_state
-    add_state_from_root_model
+    get_state_from_root_model
 
     aggregate.traversable_associations.each do |name, association_reflection|
-      add_state_from_association name, association_reflection
+      get_state_from_association name, association_reflection
     end
 
     hash
@@ -11,7 +11,7 @@ class ActiveShepherd::QueryState < ActiveShepherd::StateMethod
 
 private
 
-  def add_state_from_root_model
+  def get_state_from_root_model
     aggregate.model.attributes_before_type_cast.each do |attribute_name, value|
       next if aggregate.excluded_attributes.include?(attribute_name)
 
@@ -23,7 +23,7 @@ private
     end
   end
 
-  def add_state_from_association(name, association_reflection)
+  def get_state_from_association(name, association_reflection)
     serialized = association_state(name, association_reflection)
     hash[name.to_sym] = serialized unless serialized.blank?
   end
