@@ -1,4 +1,4 @@
-class ActiveShepherd::ApplyState < ActiveShepherd::ApplyMethod
+class ActiveShepherd::Methods::ApplyState < ActiveShepherd::ApplyMethod
   def apply_state
     mark_all_associated_objects_for_destruction
     apply_default_state_to_root_model

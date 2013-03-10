@@ -14,19 +14,19 @@ class ActiveShepherd::Aggregate
   end
 
   def changes
-    ActiveShepherd::QueryChanges.query_changes(self)
+    ActiveShepherd::Methods::QueryChanges.query_changes(self)
   end
 
   def changes=(hash)
-    ActiveShepherd::ApplyChanges.apply_changes(self, hash)
+    ActiveShepherd::Methods::ApplyChanges.apply_changes(self, hash)
   end
 
   def state
-    ActiveShepherd::QueryState.query_state(self)
+    ActiveShepherd::Methods::QueryState.query_state(self)
   end
 
   def state=(hash)
-    ActiveShepherd::ApplyState.apply_state(self, hash)
+    ActiveShepherd::Methods::ApplyState.apply_state(self, hash)
   end
 
   def raw_attributes

@@ -1,4 +1,4 @@
-class ActiveShepherd::QueryState < ActiveShepherd::QueryMethod
+class ActiveShepherd::Methods::QueryState < ActiveShepherd::QueryMethod
   def query_state
     {}.tap do |hash|
       hash.update get_state_from_root_model

@@ -1,4 +1,4 @@
-class ActiveShepherd::ApplyChanges < ActiveShepherd::ApplyMethod
+class ActiveShepherd::Methods::ApplyChanges < ActiveShepherd::ApplyMethod
   def apply_changes
     handle_create_or_destroy_keys
     apply_changes_to_root_model
