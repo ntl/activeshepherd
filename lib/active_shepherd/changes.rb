@@ -7,11 +7,7 @@ class ActiveShepherd::Changes
   end
 
   def build_changes
-    if !aggregate.model.persisted?
-      hash[:_create] = '1'
-    elsif aggregate.model.marked_for_destruction?
-      hash[:_destroy] = '1'
-    end
+    set_create_or_destroy_keys
 
     aggregate.model.changes.each do |k,v|
       v_or_attribute = aggregate.model.attributes_before_type_cast[k]
@@ -55,5 +51,15 @@ class ActiveShepherd::Changes
 
   def self.changes(aggregate)
     new(aggregate).tap(&:build_changes).changes
+  end
+
+private
+
+  def set_create_or_destroy_keys
+    if not aggregate.model.persisted?
+      hash[:_create] = '1'
+    elsif aggregate.model.marked_for_destruction?
+      hash[:_destroy] = '1'
+    end
   end
 end
