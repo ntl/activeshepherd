@@ -37,12 +37,6 @@ class ActiveShepherd::Aggregate
     associations.untraversable.keys
   end
 
-  # XXX[
-  def untraversable_associations
-    associations.untraversable
-  end
-  # XXX]
-
   def serialize_value(attribute_name, value)
     run_through_serializer(attribute_name, value, :dump)
   end
