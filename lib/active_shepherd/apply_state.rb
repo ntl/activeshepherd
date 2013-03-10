@@ -92,17 +92,18 @@ private
 
   def apply_state_to_has_many_association(association_reflection, foreign_key, state_set)
     association = aggregate.model.send(association_reflection.name)
-
     state_set.each do |state|
       associated_model = association.build
-
-      ActiveShepherd::Aggregate.new(associated_model, foreign_key).state = state
+      apply_state_to_associated_model associated_model, foreign_key, state
     end
   end
 
   def apply_state_to_has_one_association(association_reflection, foreign_key, state)
     associated_model = aggregate.model.send("build_#{association_reflection.name}")
+    apply_state_to_associated_model associated_model, foreign_key, state
+  end
 
+  def apply_state_to_associated_model(associated_model, foreign_key, state)
     ActiveShepherd::Aggregate.new(associated_model, foreign_key).state = state
   end
 end
