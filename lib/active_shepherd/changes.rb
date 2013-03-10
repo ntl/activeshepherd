@@ -1,6 +1,12 @@
-ActiveShepherd::Changes = Struct.new(:aggregate) do
+class ActiveShepherd::Changes
+  attr_reader :aggregate, :hash
+
+  def initialize(aggregate)
+    @aggregate = aggregate
+    @hash      = {}
+  end
+
   def changes
-    {}.tap do |hash|
       if !aggregate.model.persisted?
         hash[:_create] = '1'
       elsif aggregate.model.marked_for_destruction?
@@ -41,6 +47,7 @@ ActiveShepherd::Changes = Struct.new(:aggregate) do
           end
         end
       end
-    end
+
+    hash
   end
 end
