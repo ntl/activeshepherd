@@ -8,28 +8,12 @@ class ActiveShepherd::ApplyState
 
   def apply_state
     mark_all_associated_objects_for_destruction
-
+    apply_default_state_to_root_model
     apply_state_to_root_model
-
-    association_reflections = aggregate.traversable_associations
-
-    hash.each do |attribute_or_association_name, value|
-      association_reflection = association_reflections[attribute_or_association_name]
-
-      if association_reflection.present?
-        set_via_association(association_reflection, value)
-      elsif aggregate.untraversable_associations.keys.include? attribute_or_association_name
-      else
-        attribute_name = attribute_or_association_name
-        setter = "#{attribute_name}="
-        aggregate.model.send(setter, aggregate.deserialize_value(attribute_name, value))
-      end
-    end
+    apply_state_to_associations
   end
 
-private
-
-  def apply_state_to_root_model
+  def apply_default_state_to_root_model
     default_attributes = aggregate.default_attributes
     ignored_attribute_names = hash.keys.map(&:to_s) + aggregate.excluded_attributes
 
@@ -47,6 +31,36 @@ private
     end
   end
 
+  def apply_state_to_root_model
+    keys[:attributes].each do |attribute_name|
+      value = aggregate.deserialize_value attribute_name, hash[attribute_name]
+      aggregate.model.send "#{attribute_name}=", value
+    end
+  end
+
+  def apply_state_to_associations
+    keys[:associations].each do |association_name|
+      association_reflection = aggregate.traversable_associations[association_name]
+      apply_state_to_association association_reflection, hash[association_name]
+    end
+  end
+
+private
+
+  def keys
+    @keys ||= begin
+      keys_hash = { attributes: [], associations: [] }
+      hash.keys.each_with_object(keys_hash) do |key_name, keys|
+        if aggregate.traversable_associations.keys.include? key_name
+          keys[:associations] << key_name
+        elsif aggregate.untraversable_associations.keys.include? key_name
+        else
+          keys[:attributes] << key_name
+        end
+      end
+    end
+  end
+
   def mark_all_associated_objects_for_destruction
     aggregate.traversable_associations.each do |name, association_reflection|
       if association_reflection.macro == :has_many
@@ -57,21 +71,26 @@ private
     end
   end
 
-  def set_via_association(association_reflection, value)
+  def apply_state_to_association(association_reflection, state)
     foreign_key_to_self = association_reflection.foreign_key
 
-    if association_reflection.macro == :has_many
-      association = aggregate.model.send(association_reflection.name)
+    send "apply_state_to_#{association_reflection.macro}_association",
+      association_reflection, foreign_key_to_self, state
+  end
 
-      value.each do |hash|
-        associated_model = association.build
+  def apply_state_to_has_many_association(association_reflection, foreign_key, state_set)
+    association = aggregate.model.send(association_reflection.name)
 
-        ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = hash
-      end
-    elsif association_reflection.macro == :has_one
-      associated_model = aggregate.model.send("build_#{association_reflection.name}")
+    state_set.each do |state|
+      associated_model = association.build
 
-      ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = value
+      ActiveShepherd::Aggregate.new(associated_model, foreign_key).state = state
     end
+  end
+
+  def apply_state_to_has_one_association(association_reflection, foreign_key, state)
+    associated_model = aggregate.model.send("build_#{association_reflection.name}")
+
+    ActiveShepherd::Aggregate.new(associated_model, foreign_key).state = state
   end
 end
