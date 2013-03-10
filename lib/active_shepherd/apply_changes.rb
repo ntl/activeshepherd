@@ -15,59 +15,66 @@ class ActiveShepherd::ApplyChanges
       association_reflection = association_reflections[attribute_or_association_name]
 
       if association_reflection.present?
-        if aggregate.traverse_association?(association_reflection)
-          unless after.nil?
-            raise ::ActiveShepherd::AggregateRoot::BadChangeError
-          end
-
-          foreign_key_to_self = association_reflection.foreign_key
-
-          if association_reflection.macro == :has_many
-            association = aggregate.model.send(association_reflection.name)
-
-            before.each do |index, changes_for_associated_model|
-              # FIXME
-              until association.size >= (index + 1)
-                association.build
-              end
-              # /FIXME
-
-              associated_model = association[index]
-
-              if associated_model.nil?
-                raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Can't find record ##{index}"
-              end
-
-              ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
-            end
-            
-          elsif association_reflection.macro == :has_one
-            associated_model = aggregate.model.send(association_reflection.name)
-            changes_for_associated_model = before
-            ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
-          end
-        end
+        apply_changes_to_association association_reflection, before, after
       else
-        attribute_name = attribute_or_association_name
-        setter = "#{attribute_or_association_name}="
-
-        current_value = aggregate.model.send(attribute_name)
-
-        before = aggregate.deserialize_value(attribute_name, before)
-        after  = aggregate.deserialize_value(attribute_name, after)
- 
-        unless current_value == before
-          raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Expecting "\
-            "`#{attribute_or_association_name} to be `#{before.inspect}', not "\
-            "`#{current_value.inspect}'"
-        end
-
-        aggregate.model.send(setter, after)
+        apply_changes_to_attribute attribute_or_association_name, before, after
       end
     end
   end
 
 private
+
+  def apply_changes_to_association(association_reflection, before, after)
+    unless after.nil?
+      raise ::ActiveShepherd::AggregateRoot::BadChangeError
+    end
+
+    foreign_key_to_self = association_reflection.foreign_key
+
+    send "apply_changes_to_#{association_reflection.macro}_association",
+      association_reflection, foreign_key_to_self, before, after
+  end
+
+  def apply_changes_to_has_many_association(association_reflection, foreign_key, before, after)
+    association = aggregate.model.send(association_reflection.name)
+
+    before.each do |index, changes_for_associated_model|
+      # FIXME
+      until association.size >= (index + 1)
+        association.build
+      end
+      # /FIXME
+
+      associated_model = association[index]
+
+      if associated_model.nil?
+        raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Can't find record ##{index}"
+      end
+
+      ::ActiveShepherd::Aggregate.new(associated_model, foreign_key).changes = changes_for_associated_model
+    end
+  end
+  
+  def apply_changes_to_has_one_association(association_reflection, foreign_key, before, after)
+    associated_model = aggregate.model.send(association_reflection.name)
+    changes_for_associated_model = before
+    ::ActiveShepherd::Aggregate.new(associated_model, foreign_key).changes = changes_for_associated_model
+  end
+
+  def apply_changes_to_attribute(attribute_name, before, after)
+    current_value = aggregate.model.send(attribute_name)
+
+    before = aggregate.deserialize_value(attribute_name, before)
+    after  = aggregate.deserialize_value(attribute_name, after)
+
+    unless current_value == before
+      raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Expecting "\
+        "`#{attribute_or_association_name} to be `#{before.inspect}', not "\
+        "`#{current_value.inspect}'"
+    end
+
+    aggregate.model.send "#{attribute_name}=", after
+  end
 
   def handle_create_or_destroy_keys
     hash.delete :_create
