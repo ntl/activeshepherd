@@ -28,8 +28,16 @@ private
     split_hash[:meta_action] == :_create
   end
 
+  def create!
+    hash[:_create] = '1'
+  end
+
   def destroy?
     split_hash[:meta_action] == :_destroy
+  end
+
+  def destroy!
+    hash[:_destroy] = '1'
   end
 
   def split_hash

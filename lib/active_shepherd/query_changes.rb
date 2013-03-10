@@ -54,9 +54,9 @@ private
 
   def set_create_or_destroy_keys
     if not aggregate.model.persisted?
-      hash[:_create] = '1'
+      create!
     elsif aggregate.model.marked_for_destruction?
-      hash[:_destroy] = '1'
+      destroy!
     end
   end
 end
