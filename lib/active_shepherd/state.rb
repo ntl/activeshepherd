@@ -31,26 +31,26 @@ private
   end
 
   def add_state_from_association(name, association_reflection)
-    serialized = get_via_association(association_reflection)
+    serialized = association_state(name, association_reflection)
     hash[name.to_sym] = serialized unless serialized.blank?
   end
 
-  # XXX[
-  def get_via_association(association_reflection)
+  def association_state(name, association_reflection)
     foreign_key_to_self = association_reflection.foreign_key
-    model_or_collection_of_models = aggregate.model.send(association_reflection.name)
 
-    if model_or_collection_of_models.nil?
-      # noop
-    elsif association_reflection.macro == :belongs_to
-      # noop
-    elsif association_reflection.macro == :has_many
-      model_or_collection_of_models.to_a.select(&:present?).map do |associated_model|
-        ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state
+    if association_reflection.macro == :has_one
+      associated_model = aggregate.model.send name
+      if associated_model
+        state_of_associated_model associated_model, foreign_key_to_self
       end
-    else
-      ::ActiveShepherd::Aggregate.new(model_or_collection_of_models, foreign_key_to_self).state
+    elsif association_reflection.macro == :has_many
+      aggregate.model.send(name).map do |associated_model|
+        state_of_associated_model associated_model, foreign_key_to_self
+      end
     end
   end
-  # ]XXX
+
+  def state_of_associated_model(model, foreign_key)
+    ActiveShepherd::Aggregate.new(model, foreign_key).state
+  end
 end
