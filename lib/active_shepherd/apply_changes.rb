@@ -13,6 +13,7 @@ class ActiveShepherd::ApplyChanges
 
     hash.each do |attribute_or_association_name, (before, after)|
       association_reflection = association_reflections[attribute_or_association_name]
+      # FIXME: we need to ignore associations that we don't traverse (untraversable)
 
       if association_reflection.present?
         raise ::ActiveShepherd::AggregateRoot::BadChangeError unless after.nil?
