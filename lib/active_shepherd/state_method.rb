@@ -24,6 +24,14 @@ private
     split_hash[:attributes]
   end
 
+  def create?
+    split_hash[:meta_action] == :_create
+  end
+
+  def destroy?
+    split_hash[:meta_action] == :_destroy
+  end
+
   def split_hash
     @split_hash ||= begin
       split_hash = { associations: {}, attributes: {} }
@@ -32,6 +40,8 @@ private
         if traversable_association.present?
           by_key[:associations][key] = [traversable_association, value]
         elsif aggregate.untraversable_association_names.include? key
+        elsif [:_create, :_destroy].include? key.to_sym
+          by_key[:meta_action] = key.to_sym
         else
           by_key[:attributes][key] = value
         end

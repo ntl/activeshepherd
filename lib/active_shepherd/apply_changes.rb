@@ -1,7 +1,5 @@
 class ActiveShepherd::ApplyChanges < ActiveShepherd::StateMethod
   def apply_changes
-    @hash = @hash.dup # XXX
-
     handle_create_or_destroy_keys
     apply_changes_to_root_model
     apply_changes_to_associations
@@ -72,9 +70,6 @@ private
   end
 
   def handle_create_or_destroy_keys
-    hash.delete :_create
-    if hash.delete :_destroy
-      aggregate.model.mark_for_destruction
-    end
+    aggregate.model.mark_for_destruction if destroy?
   end
 end
