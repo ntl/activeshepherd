@@ -1,4 +1,4 @@
-class ActiveShepherd::QueryChanges < ActiveShepherd::StateMethod
+class ActiveShepherd::QueryChanges < ActiveShepherd::QueryMethod
   def query_changes
     {}.tap do |hash|
       hash.update get_create_or_destroy_keys

@@ -1,4 +1,4 @@
-class ActiveShepherd::ApplyState < ActiveShepherd::StateMethod
+class ActiveShepherd::ApplyState < ActiveShepherd::ApplyMethod
   def apply_state
     mark_all_associated_objects_for_destruction
     apply_default_state_to_root_model
@@ -10,7 +10,7 @@ private
 
   def apply_default_state_to_root_model
     default_attributes = aggregate.default_attributes
-    ignored_attribute_names = hash.keys.map(&:to_s) + aggregate.excluded_attributes
+    ignored_attribute_names = attributes.keys.map(&:to_s) + aggregate.excluded_attributes
 
     (default_attributes.keys - ignored_attribute_names).each do |attribute_name|
       current_value = aggregate.model.attributes[attribute_name]
