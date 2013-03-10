@@ -41,7 +41,13 @@ module ActiveShepherd
     end
 
     def visit(method_name, arg1, arg2)
-      visitor.public_send method_name, arg1, *Array.wrap(arg2)
+      if visitor.respond_to? method_name
+        if visitor.method(method_name).arity == 2
+          visitor.public_send method_name, arg1, arg2
+        else
+          visitor.public_send method_name, arg1, *Array.wrap(arg2)
+        end
+      end
     end
   end
 end

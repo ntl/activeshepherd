@@ -5,7 +5,8 @@ class ActiveShepherd::Methods
       @traversal.traverse
     end
 
-    def handle_attribute(attribute_name, before, after)
+    def handle_attribute(attribute_name, before_and_after)
+      before, after = before_and_after
       current_value = aggregate.model.send(attribute_name)
 
       before = aggregate.deserialize_value(attribute_name, before)
@@ -59,9 +60,6 @@ class ActiveShepherd::Methods
 
     def apply_changes_to_associated_model(model, foreign_key, changes)
       ActiveShepherd::Aggregate.new(model, foreign_key).changes = changes
-    end
-
-    def apply_changes_to_attribute(attribute_name, before, after)
     end
 
     def handle_create_or_destroy_keys
@@ -192,8 +190,32 @@ class ActiveShepherd::Methods
     def apply_state
       mark_all_associated_objects_for_destruction
       apply_default_state_to_root_model
-      apply_state_to_root_model
-      apply_state_to_associations
+      @traversal.traverse
+    end
+
+    def handle_attribute(attribute_name, raw_value)
+      value = aggregate.deserialize_value attribute_name, raw_value
+      aggregate.model.send "#{attribute_name}=", value
+    end
+
+    def handle_has_many_association(reflection, collection_state)
+      association = aggregate.model.send reflection.name
+      collection_state.each do |state|
+        apply_state_to_associated_model(
+          association.build,
+          reflection.foreign_key,
+          state,
+        )
+      end
+    end
+
+    def handle_has_one_association(reflection, state)
+      associated_model = aggregate.model.send "build_#{reflection.name}"
+      apply_state_to_associated_model(
+        associated_model,
+        reflection.foreign_key,
+        state,
+      )
     end
 
   private
@@ -214,39 +236,6 @@ class ActiveShepherd::Methods
 
         aggregate.model.send("#{attribute_name}=", default_value)
       end
-    end
-
-    def apply_state_to_root_model
-      attributes.each do |attribute_name, raw_value|
-        value = aggregate.deserialize_value attribute_name, raw_value
-        aggregate.model.send "#{attribute_name}=", value
-      end
-    end
-
-    def apply_state_to_associations
-      associations.values.each do |association_reflection, state|
-        apply_state_to_association association_reflection, state
-      end
-    end
-
-    def apply_state_to_association(association_reflection, state)
-      foreign_key_to_self = association_reflection.foreign_key
-
-      send "apply_state_to_#{association_reflection.macro}_association",
-        association_reflection, foreign_key_to_self, state
-    end
-
-    def apply_state_to_has_many_association(association_reflection, foreign_key, state_set)
-      association = aggregate.model.send(association_reflection.name)
-      state_set.each do |state|
-        associated_model = association.build
-        apply_state_to_associated_model associated_model, foreign_key, state
-      end
-    end
-
-    def apply_state_to_has_one_association(association_reflection, foreign_key, state)
-      associated_model = aggregate.model.send("build_#{association_reflection.name}")
-      apply_state_to_associated_model associated_model, foreign_key, state
     end
 
     def apply_state_to_associated_model(associated_model, foreign_key, state)
