@@ -19,6 +19,14 @@ class ActiveShepherd::Method
 
     setup *args
   end
+
+  def traverse!
+    ActiveShepherd::Traversal.new(
+      self,
+      attributes: attributes,
+      associations: associations,
+    ).traverse
+  end
 end
 
 module ActiveShepherd
@@ -66,14 +74,6 @@ class ActiveShepherd::QueryMethod < ActiveShepherd::Method
     @query = {}
   end
 
-  def traverse!
-    ActiveShepherd::Traversal.new(
-      self,
-      attributes: attributes,
-      associations: associations,
-    ).traverse
-  end
-
 private
 
   def setup
@@ -82,14 +82,6 @@ end
 
 class ActiveShepherd::ApplyMethod < ActiveShepherd::Method
   attr_reader :meta_action
-
-  def traverse!
-    ActiveShepherd::Traversal.new(
-      self,
-      attributes: attributes,
-      associations: associations,
-    ).traverse
-  end
 
   def create?
     meta_action == :_create
