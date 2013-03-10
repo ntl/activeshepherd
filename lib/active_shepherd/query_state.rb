@@ -21,7 +21,8 @@ private
 
   def get_state_from_associations
     aggregate.traversable_associations.each do |name, association_reflection|
-      get_state_from_association name, association_reflection
+      state = get_state_from_association name, association_reflection
+      hash[name.to_sym] = state unless state.blank?
     end
   end
 
@@ -35,13 +36,13 @@ private
     state = aggregate.model.send(name).map do |associated_model|
       get_state_from_associated_model associated_model, foreign_key
     end
-    hash[name] = state unless state.empty?
+    state unless state.empty?
   end
 
   def get_state_from_has_one_association(name, foreign_key)
     associated_model = aggregate.model.send name
     if associated_model
-      hash[name] = get_state_from_associated_model associated_model, foreign_key 
+      get_state_from_associated_model associated_model, foreign_key 
     end
   end
 

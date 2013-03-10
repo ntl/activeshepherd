@@ -20,8 +20,9 @@ private
   end
 
   def get_changes_from_associations
-    aggregate.traversable_associations.values.each do |association_reflection|
-      get_changes_from_association association_reflection
+    aggregate.traversable_associations.each do |name, association_reflection|
+      changes = get_changes_from_association association_reflection
+      hash[name.to_sym] = changes unless changes.blank?
     end
   end
 
@@ -37,7 +38,7 @@ private
       changes = get_changes_from_associated_model associated_model, foreign_key
       list[index] = changes unless changes.empty?
     end
-    hash[name] = record_changes unless record_changes.empty?
+    record_changes unless record_changes.empty?
   end
 
   def get_changes_from_has_one_association(name, foreign_key)
@@ -45,7 +46,7 @@ private
     return unless associated_model.present?
 
     changes = get_changes_from_associated_model associated_model, foreign_key
-    hash[name] = changes unless changes.empty?
+    changes unless changes.empty?
   end
 
   def get_changes_from_associated_model(model, foreign_key)
