@@ -25,6 +25,10 @@ class ActiveShepherd::Aggregate
     ActiveShepherd::State.state(self)
   end
 
+  def state=(hash)
+    ActiveShepherd::ApplyState.new(self, hash).apply_state
+  end
+
   def traversable_associations
     associations.traversable
   end
@@ -45,58 +49,6 @@ class ActiveShepherd::Aggregate
   def traverse_each_association(&block)
     traversable_associations.each do |name, association|
       yield(name.to_sym, association.macro, association)
-    end
-  end
-
-  def set_via_association(association_reflection, value)
-    foreign_key_to_self = association_reflection.foreign_key
-
-    if association_reflection.macro == :has_many
-      association = model.send(association_reflection.name)
-
-      value.each do |hash|
-        associated_model = association.build
-
-        ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = hash
-      end
-    elsif association_reflection.macro == :has_one
-      associated_model = model.send("build_#{association_reflection.name}")
-
-      ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state = value
-    end
-  end
-
-  def state=(hash)
-    mark_all_associated_objects_for_destruction
-
-    default_attributes = model.class.new.attributes
-    ignored_attribute_names = hash.keys.map(&:to_s) + excluded_attributes
-
-    (default_attributes.keys - ignored_attribute_names).each do |attribute_name|
-      current_value = model.attributes[attribute_name]
-      default_value = default_attributes[attribute_name]
-
-      unless deserialize_value(attribute_name, default_value) == default_value
-        raise 'Have not handled this use case yet; serialized attributes with a default value'
-      end
-
-      next if default_value == current_value
-
-      model.send("#{attribute_name}=", default_value)
-    end
-
-    hash.each do |attribute_or_association_name, value|
-      association_reflection = model.class.reflect_on_association(attribute_or_association_name.to_sym)
-
-      if association_reflection.present?
-        if traverse_association?(association_reflection)
-          set_via_association(association_reflection, value)
-        end
-      else
-        attribute_name = attribute_or_association_name
-        setter = "#{attribute_name}="
-        model.send(setter, deserialize_value(attribute_name, value))
-      end
     end
   end
   # ]XXX
@@ -126,18 +78,6 @@ private
       value
     end
   end
-
-  # XXX[
-  def mark_all_associated_objects_for_destruction
-    traverse_each_association do |name, macro, reflection|
-      if macro == :has_many
-        model.send(name).each { |record| record.mark_for_destruction }
-      elsif macro == :has_one
-        model.send(name).try(&:mark_for_destruction)
-      end
-    end
-  end
-  # ]XXX
 
   def traverse_association?(association)
     return false if association.options[:readonly]

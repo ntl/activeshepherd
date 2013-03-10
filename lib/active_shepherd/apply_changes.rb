@@ -18,6 +18,7 @@ class ActiveShepherd::ApplyChanges
       if association_reflection.present?
         raise ::ActiveShepherd::AggregateRoot::BadChangeError unless after.nil?
         apply_changes_to_association association_reflection, before
+      elsif aggregate.untraversable_associations.keys.include? attribute_or_association_name
       else
         attribute_name = attribute_or_association_name
         apply_changes_to_attribute attribute_name, before, after
