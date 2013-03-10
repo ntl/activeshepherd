@@ -10,8 +10,7 @@ class ActiveShepherd::State
     add_state_from_root_model
 
     aggregate.traversable_associations.each do |name, association_reflection|
-      serialized = get_via_association(association_reflection)
-      hash[name.to_sym] = serialized unless serialized.blank?
+      add_state_from_association name, association_reflection
     end
 
     hash
@@ -31,6 +30,12 @@ private
     end
   end
 
+  def add_state_from_association(name, association_reflection)
+    serialized = get_via_association(association_reflection)
+    hash[name.to_sym] = serialized unless serialized.blank?
+  end
+
+  # XXX[
   def get_via_association(association_reflection)
     foreign_key_to_self = association_reflection.foreign_key
     model_or_collection_of_models = aggregate.model.send(association_reflection.name)
@@ -47,4 +52,5 @@ private
       ::ActiveShepherd::Aggregate.new(model_or_collection_of_models, foreign_key_to_self).state
     end
   end
+  # ]XXX
 end
