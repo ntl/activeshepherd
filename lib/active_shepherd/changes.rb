@@ -6,7 +6,7 @@ class ActiveShepherd::Changes
     @hash      = {}
   end
 
-  def changes
+  def build_changes
     if !aggregate.model.persisted?
       hash[:_create] = '1'
     elsif aggregate.model.marked_for_destruction?
@@ -47,7 +47,13 @@ class ActiveShepherd::Changes
         end
       end
     end
+  end
 
+  def changes
     hash
+  end
+
+  def self.changes(aggregate)
+    new(aggregate).tap(&:build_changes).changes
   end
 end

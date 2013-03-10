@@ -10,7 +10,7 @@ class ActiveShepherd::Aggregate
   end
 
   def changes
-    ActiveShepherd::Changes.new(self).changes
+    ActiveShepherd::Changes.changes(self)
   end
 
   def traverse_each_association(&block)
