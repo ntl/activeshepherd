@@ -3,27 +3,13 @@ class ActiveShepherd::ApplyState
 
   def initialize(aggregate, hash)
     @aggregate = aggregate
-    @hash      = hash
+    @hash      = hash.dup
   end
 
   def apply_state
     mark_all_associated_objects_for_destruction
 
-    default_attributes = aggregate.model.class.new.attributes
-    ignored_attribute_names = hash.keys.map(&:to_s) + aggregate.excluded_attributes
-
-    (default_attributes.keys - ignored_attribute_names).each do |attribute_name|
-      current_value = aggregate.model.attributes[attribute_name]
-      default_value = default_attributes[attribute_name]
-
-      unless aggregate.deserialize_value(attribute_name, default_value) == default_value
-        raise 'Have not handled this use case yet; serialized attributes with a default value'
-      end
-
-      next if default_value == current_value
-
-      aggregate.model.send("#{attribute_name}=", default_value)
-    end
+    apply_state_to_root_model
 
     association_reflections = aggregate.traversable_associations
 
@@ -42,6 +28,24 @@ class ActiveShepherd::ApplyState
   end
 
 private
+
+  def apply_state_to_root_model
+    default_attributes = aggregate.default_attributes
+    ignored_attribute_names = hash.keys.map(&:to_s) + aggregate.excluded_attributes
+
+    (default_attributes.keys - ignored_attribute_names).each do |attribute_name|
+      current_value = aggregate.model.attributes[attribute_name]
+      default_value = default_attributes[attribute_name]
+
+      unless aggregate.deserialize_value(attribute_name, default_value) == default_value
+        raise 'Have not handled this use case yet; serialized attributes with a default value'
+      end
+
+      next if default_value == current_value
+
+      aggregate.model.send("#{attribute_name}=", default_value)
+    end
+  end
 
   def mark_all_associated_objects_for_destruction
     aggregate.traversable_associations.each do |name, association_reflection|
