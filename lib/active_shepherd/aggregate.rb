@@ -13,18 +13,21 @@ class ActiveShepherd::Aggregate
     ActiveShepherd::Changes.changes(self)
   end
 
-  # XXX[
-  def traverse_each_association(&block)
-    traversable_associations.each do |association|
-      yield(association.name.to_sym, association.macro, association)
-    end
+  def changes=(hash)
+    ActiveShepherd::ApplyChanges.new(self, hash).apply_changes
   end
-  # ]XXX
 
   def traversable_associations
     model.class.reflect_on_all_associations.select do |association|
       traverse_association?(association)
     end
+  end
+
+  def traverse_association?(association)
+    return false if association.options[:readonly]
+    return false if association.macro == :belongs_to
+
+    true
   end
 
   def serialize_value(attribute_name, value)
@@ -35,63 +38,10 @@ class ActiveShepherd::Aggregate
     run_through_serializer(attribute_name, value, :load)
   end
 
-  def changes=(hash)
-    hash.each do |attribute_or_association_name, (before, after)|
-      association_reflection = model.class.reflect_on_association(attribute_or_association_name.to_sym)
-
-      if association_reflection.present?
-        if traverse_association?(association_reflection)
-          unless after.nil?
-            raise ::ActiveShepherd::AggregateRoot::BadChangeError
-          end
-
-          foreign_key_to_self = association_reflection.foreign_key
-
-          if association_reflection.macro == :has_many
-            association = model.send(association_reflection.name)
-
-            before.each do |index, changes_for_associated_model|
-              # FIXME
-              until association.size >= (index + 1)
-                association.build
-              end
-              # /FIXME
-
-              associated_model = association[index]
-
-              if associated_model.nil?
-                raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Can't find record ##{index}"
-              end
-
-              ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
-            end
-            
-          elsif association_reflection.macro == :has_one
-            associated_model = model.send(association_reflection.name)
-            changes_for_associated_model = before
-            ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
-          end
-        end
-      elsif attribute_or_association_name.to_s == "_create"
-      elsif attribute_or_association_name.to_s == "_destroy"
-        model.mark_for_destruction
-      else
-        attribute_name = attribute_or_association_name
-        setter = "#{attribute_or_association_name}="
-
-        current_value = @model.send(attribute_name)
-
-        before = deserialize_value(attribute_name, before)
-        after  = deserialize_value(attribute_name, after)
- 
-        unless current_value == before
-          raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Expecting "\
-            "`#{attribute_or_association_name} to be `#{before.inspect}', not "\
-            "`#{current_value.inspect}'"
-        end
-
-        model.send(setter, after)
-      end
+  # XXX[
+  def traverse_each_association(&block)
+    traversable_associations.each do |association|
+      yield(association.name.to_sym, association.macro, association)
     end
   end
 
@@ -184,6 +134,7 @@ class ActiveShepherd::Aggregate
       end
     end
   end
+  # ]XXX
 
 private
 
@@ -194,13 +145,6 @@ private
     else
       value
     end
-  end
-
-  def traverse_association?(association)
-    return false if association.options[:readonly]
-    return false if association.macro == :belongs_to
-
-    true
   end
 
   def mark_all_associated_objects_for_destruction
