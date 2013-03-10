@@ -4,7 +4,18 @@ class ActiveShepherd::ApplyChanges < ActiveShepherd::StateMethod
 
     handle_create_or_destroy_keys
     apply_changes_to_root_model
+    apply_changes_to_associations
+  end
 
+private
+
+  def apply_changes_to_root_model
+    attributes.each do |attribute_name, (before, after)|
+      apply_changes_to_attribute attribute_name, before, after
+    end
+  end
+
+  def apply_changes_to_associations
     association_reflections = aggregate.traversable_associations
 
     hash.each do |attribute_or_association_name, (before, after)|
@@ -15,14 +26,6 @@ class ActiveShepherd::ApplyChanges < ActiveShepherd::StateMethod
         raise ::ActiveShepherd::AggregateRoot::BadChangeError unless after.nil?
         apply_changes_to_association association_reflection, before
       end
-    end
-  end
-
-private
-
-  def apply_changes_to_root_model
-    attributes.each do |attribute_name, (before, after)|
-      apply_changes_to_attribute attribute_name, before, after
     end
   end
 
