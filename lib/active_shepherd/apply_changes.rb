@@ -15,30 +15,28 @@ class ActiveShepherd::ApplyChanges
       association_reflection = association_reflections[attribute_or_association_name]
 
       if association_reflection.present?
-        apply_changes_to_association association_reflection, before, after
+        raise ::ActiveShepherd::AggregateRoot::BadChangeError unless after.nil?
+        apply_changes_to_association association_reflection, before
       else
-        apply_changes_to_attribute attribute_or_association_name, before, after
+        attribute_name = attribute_or_association_name
+        apply_changes_to_attribute attribute_name, before, after
       end
     end
   end
 
 private
 
-  def apply_changes_to_association(association_reflection, before, after)
-    unless after.nil?
-      raise ::ActiveShepherd::AggregateRoot::BadChangeError
-    end
-
+  def apply_changes_to_association(association_reflection, changes_or_changes_set)
     foreign_key_to_self = association_reflection.foreign_key
 
     send "apply_changes_to_#{association_reflection.macro}_association",
-      association_reflection, foreign_key_to_self, before, after
+      association_reflection, foreign_key_to_self, changes_or_changes_set
   end
 
-  def apply_changes_to_has_many_association(association_reflection, foreign_key, before, after)
+  def apply_changes_to_has_many_association(association_reflection, foreign_key, changes_set)
     association = aggregate.model.send(association_reflection.name)
 
-    before.each do |index, changes_for_associated_model|
+    changes_set.each do |index, changes|
       # FIXME
       association.build until association.size >= (index + 1)
       # /FIXME
@@ -50,16 +48,13 @@ private
           "Can't find record ##{index}"
       end
 
-      apply_changes_to_associated_model associated_model, foreign_key,
-        changes_for_associated_model
+      apply_changes_to_associated_model associated_model, foreign_key, changes
     end
   end
 
-  def apply_changes_to_has_one_association(association_reflection, foreign_key, before, after)
+  def apply_changes_to_has_one_association(association_reflection, foreign_key, changes)
     associated_model = aggregate.model.send(association_reflection.name)
-    changes_for_associated_model = before
-    apply_changes_to_associated_model associated_model, foreign_key,
-      changes_for_associated_model
+    apply_changes_to_associated_model associated_model, foreign_key, changes
   end
 
   def apply_changes_to_associated_model(model, foreign_key, changes)
