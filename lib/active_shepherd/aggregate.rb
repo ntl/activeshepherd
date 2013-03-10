@@ -9,6 +9,10 @@ class ActiveShepherd::Aggregate
     @excluded_attributes.concat(Array.wrap(excluded_attributes).map(&:to_s))
   end
 
+  def default_attributes
+    model.class.new.attributes
+  end
+
   def changes
     ActiveShepherd::Changes.changes(self)
   end
