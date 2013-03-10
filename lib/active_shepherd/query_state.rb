@@ -1,7 +1,9 @@
 class ActiveShepherd::QueryState < ActiveShepherd::StateMethod
   def query_state
-    hash.update get_state_from_root_model
-    hash.update get_state_from_associations
+    {}.tap do |hash|
+      hash.update get_state_from_root_model
+      hash.update get_state_from_associations
+    end
   end
 
 private

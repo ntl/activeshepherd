@@ -1,8 +1,10 @@
 class ActiveShepherd::QueryChanges < ActiveShepherd::StateMethod
   def query_changes
-    hash.update get_create_or_destroy_keys
-    hash.update get_changes_from_root_model
-    hash.update get_changes_from_associations
+    {}.tap do |hash|
+      hash.update get_create_or_destroy_keys
+      hash.update get_changes_from_root_model
+      hash.update get_changes_from_associations
+    end
   end
 
 private
