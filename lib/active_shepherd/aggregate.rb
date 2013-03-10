@@ -26,7 +26,7 @@ class ActiveShepherd::Aggregate
   end
 
   def state=(hash)
-    ActiveShepherd::ApplyState.new(self, hash).apply_state
+    ActiveShepherd::ApplyState.apply_state(self, hash)
   end
 
   def traversable_associations
