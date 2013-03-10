@@ -1,0 +1,123 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+ActiveShepherd	lib/active_shepherd.rb	/^module ActiveShepherd ; end$/;"	m
+ActiveShepherd	lib/active_shepherd.rb	/^module ActiveShepherd$/;"	m
+ActiveShepherd	lib/active_shepherd/active_record_shim.rb	/^module ActiveShepherd$/;"	m
+ActiveShepherd	lib/active_shepherd/aggregate.rb	/^class ActiveShepherd::Aggregate$/;"	c
+ActiveShepherd	lib/active_shepherd/aggregate_root.rb	/^module ActiveShepherd::AggregateRoot$/;"	m
+ActiveShepherd	lib/active_shepherd/apply_changes.rb	/^class ActiveShepherd::ApplyChanges < ActiveShepherd::StateMethod$/;"	c
+ActiveShepherd	lib/active_shepherd/apply_state.rb	/^class ActiveShepherd::ApplyState < ActiveShepherd::StateMethod$/;"	c
+ActiveShepherd	lib/active_shepherd/deep_reverse_changes.rb	/^class ActiveShepherd::DeepReverseChanges < Struct.new(:changes)$/;"	c
+ActiveShepherd	lib/active_shepherd/query_changes.rb	/^class ActiveShepherd::QueryChanges < ActiveShepherd::StateMethod$/;"	c
+ActiveShepherd	lib/active_shepherd/query_state.rb	/^class ActiveShepherd::QueryState < ActiveShepherd::StateMethod$/;"	c
+ActiveShepherd	lib/active_shepherd/state_method.rb	/^class ActiveShepherd::StateMethod$/;"	c
+ActiveShepherd	lib/active_shepherd/version.rb	/^module ActiveShepherd$/;"	m
+AggregateTest	test/unit/aggregate_test.rb	/^class AggregateTest < MiniTest::Unit::TestCase$/;"	c
+ClassMethods	lib/active_shepherd/aggregate_root.rb	/^  module ClassMethods$/;"	m	class:ActiveShepherd
+Comment	test/setup_test_models.rb	/^class Comment < ActiveRecord::Base$/;"	c
+IntegrationTest	test/integration/project_todo_scenario_test.rb	/^class IntegrationTest < MiniTest::Unit::TestCase$/;"	c
+Project	test/setup_test_models.rb	/^class Project < ActiveRecord::Base$/;"	c
+Project	test/setup_test_models.rb	/^class Project::Comment < Comment$/;"	c
+Project	test/setup_test_models.rb	/^class Project::Detail < ActiveRecord::Base$/;"	c
+Project	test/setup_test_models.rb	/^class Project::Todo < ActiveRecord::Base$/;"	c
+Project	test/setup_test_models.rb	/^class Project::TodoAssignment < ActiveRecord::Base$/;"	c
+Project	test/setup_test_models.rb	/^class Project::TodoList < ActiveRecord::Base$/;"	c
+able_to_act_as_aggregate_root?	lib/active_shepherd/active_record_shim.rb	/^      def able_to_act_as_aggregate_root?$/;"	f	class:ActiveShepherd.enable
+act_as_aggregate_root!	lib/active_shepherd/active_record_shim.rb	/^      def act_as_aggregate_root!$/;"	f	class:ActiveShepherd.enable
+add_changes_on_association	lib/active_shepherd/query_changes.rb	/^  def add_changes_on_association(association_reflection)$/;"	f	class:ActiveShepherd
+add_changes_on_associations	lib/active_shepherd/query_changes.rb	/^  def add_changes_on_associations$/;"	f	class:ActiveShepherd
+add_changes_on_has_many_association	lib/active_shepherd/query_changes.rb	/^  def add_changes_on_has_many_association(name, foreign_key)$/;"	f	class:ActiveShepherd
+add_changes_on_has_one_association	lib/active_shepherd/query_changes.rb	/^  def add_changes_on_has_one_association(name, foreign_key)$/;"	f	class:ActiveShepherd
+add_changes_on_root_model	lib/active_shepherd/query_changes.rb	/^  def add_changes_on_root_model$/;"	f	class:ActiveShepherd
+add_state_from_association	lib/active_shepherd/query_state.rb	/^  def add_state_from_association(name, association_reflection)$/;"	f	class:ActiveShepherd
+add_state_from_root_model	lib/active_shepherd/query_state.rb	/^  def add_state_from_root_model$/;"	f	class:ActiveShepherd
+aggregate_changes	lib/active_shepherd/aggregate_root.rb	/^  def aggregate_changes$/;"	f	class:ActiveShepherd
+aggregate_changes=	lib/active_shepherd/aggregate_root.rb	/^  def aggregate_changes=(changes)$/;"	f	class:ActiveShepherd
+aggregate_state	lib/active_shepherd/aggregate_root.rb	/^  def aggregate_state$/;"	f	class:ActiveShepherd
+aggregate_state=	lib/active_shepherd/aggregate_root.rb	/^  def aggregate_state=(blob)$/;"	f	class:ActiveShepherd
+aggro	lib/active_shepherd/aggregate_root.rb	/^  def aggro$/;"	f	class:ActiveShepherd
+apply_changes	lib/active_shepherd/apply_changes.rb	/^  def apply_changes$/;"	f	class:ActiveShepherd
+apply_changes_to_associated_model	lib/active_shepherd/apply_changes.rb	/^  def apply_changes_to_associated_model(model, foreign_key, changes)$/;"	f	class:ActiveShepherd
+apply_changes_to_association	lib/active_shepherd/apply_changes.rb	/^  def apply_changes_to_association(association_reflection, changes_or_changes_set)$/;"	f	class:ActiveShepherd
+apply_changes_to_associations	lib/active_shepherd/apply_changes.rb	/^  def apply_changes_to_associations$/;"	f	class:ActiveShepherd
+apply_changes_to_attribute	lib/active_shepherd/apply_changes.rb	/^  def apply_changes_to_attribute(attribute_name, before, after)$/;"	f	class:ActiveShepherd
+apply_changes_to_has_many_association	lib/active_shepherd/apply_changes.rb	/^  def apply_changes_to_has_many_association(association_reflection, foreign_key, changes_set)$/;"	f	class:ActiveShepherd
+apply_changes_to_has_one_association	lib/active_shepherd/apply_changes.rb	/^  def apply_changes_to_has_one_association(association_reflection, foreign_key, changes)$/;"	f	class:ActiveShepherd
+apply_changes_to_root_model	lib/active_shepherd/apply_changes.rb	/^  def apply_changes_to_root_model$/;"	f	class:ActiveShepherd
+apply_default_state_to_root_model	lib/active_shepherd/apply_state.rb	/^  def apply_default_state_to_root_model$/;"	f	class:ActiveShepherd
+apply_state	lib/active_shepherd/apply_state.rb	/^  def apply_state$/;"	f	class:ActiveShepherd
+apply_state_to_associated_model	lib/active_shepherd/apply_state.rb	/^  def apply_state_to_associated_model(associated_model, foreign_key, state)$/;"	f	class:ActiveShepherd
+apply_state_to_association	lib/active_shepherd/apply_state.rb	/^  def apply_state_to_association(association_reflection, state)$/;"	f	class:ActiveShepherd
+apply_state_to_associations	lib/active_shepherd/apply_state.rb	/^  def apply_state_to_associations$/;"	f	class:ActiveShepherd
+apply_state_to_has_many_association	lib/active_shepherd/apply_state.rb	/^  def apply_state_to_has_many_association(association_reflection, foreign_key, state_set)$/;"	f	class:ActiveShepherd
+apply_state_to_has_one_association	lib/active_shepherd/apply_state.rb	/^  def apply_state_to_has_one_association(association_reflection, foreign_key, state)$/;"	f	class:ActiveShepherd
+apply_state_to_root_model	lib/active_shepherd/apply_state.rb	/^  def apply_state_to_root_model$/;"	f	class:ActiveShepherd
+association_state	lib/active_shepherd/query_state.rb	/^  def association_state(name, association_reflection)$/;"	f	class:ActiveShepherd
+associations	lib/active_shepherd/aggregate.rb	/^  def associations$/;"	f	class:ActiveShepherd
+associations	lib/active_shepherd/state_method.rb	/^  def associations$/;"	f	class:ActiveShepherd
+attributes	lib/active_shepherd/state_method.rb	/^  def attributes$/;"	f	class:ActiveShepherd
+behave_like_an_aggregate?	lib/active_shepherd/aggregate_root.rb	/^    def behave_like_an_aggregate?$/;"	f	class:ActiveShepherd.ClassMethods
+build_persisted_state	test/integration/project_todo_scenario_test.rb	/^  def build_persisted_state$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+changes	lib/active_shepherd/aggregate.rb	/^  def changes$/;"	f	class:ActiveShepherd
+changes=	lib/active_shepherd/aggregate.rb	/^  def changes=(hash)$/;"	f	class:ActiveShepherd
+changes_for_associated_model	lib/active_shepherd/query_changes.rb	/^  def changes_for_associated_model(model, foreign_key)$/;"	f	class:ActiveShepherd
+deep_reverse_changes	lib/active_shepherd.rb	/^  def self.deep_reverse_changes(changes)$/;"	F	class:ActiveShepherd
+default_attributes	lib/active_shepherd/aggregate.rb	/^  def default_attributes$/;"	f	class:ActiveShepherd
+deserialize_value	lib/active_shepherd/aggregate.rb	/^  def deserialize_value(attribute_name, value)$/;"	f	class:ActiveShepherd
+dump	test/setup_test_models.rb	/^    def self.dump(fruit)$/;"	F	class:Project
+enable	lib/active_shepherd/active_record_shim.rb	/^  def self.enable!(activerecord_base)$/;"	F	class:ActiveShepherd
+handle_create_or_destroy_keys	lib/active_shepherd/apply_changes.rb	/^  def handle_create_or_destroy_keys$/;"	f	class:ActiveShepherd
+included	lib/active_shepherd/aggregate_root.rb	/^  def self.included(base)$/;"	F	class:ActiveShepherd
+inherited	lib/active_shepherd/state_method.rb	/^  def self.inherited(base)$/;"	F	class:ActiveShepherd
+initialize	lib/active_shepherd/aggregate.rb	/^  def initialize(model, excluded_attributes = [])$/;"	f	class:ActiveShepherd
+initialize	lib/active_shepherd/state_method.rb	/^  def initialize(aggregate, hash = {})$/;"	f	class:ActiveShepherd
+load	test/setup_test_models.rb	/^    def self.load(blob)$/;"	F	class:Project
+mark_all_associated_objects_for_destruction	lib/active_shepherd/apply_state.rb	/^  def mark_all_associated_objects_for_destruction$/;"	f	class:ActiveShepherd
+query_changes	lib/active_shepherd/query_changes.rb	/^  def query_changes$/;"	f	class:ActiveShepherd
+query_state	lib/active_shepherd/query_state.rb	/^  def query_state$/;"	f	class:ActiveShepherd
+reverse	lib/active_shepherd/deep_reverse_changes.rb	/^  def reverse$/;"	f	class:ActiveShepherd
+reverse_aggregate_changes=	lib/active_shepherd/aggregate_root.rb	/^  def reverse_aggregate_changes=(changes)$/;"	f	class:ActiveShepherd
+reverse_changes	test/integration/project_todo_scenario_test.rb	/^  def reverse_changes$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+run_through_serializer	lib/active_shepherd/aggregate.rb	/^  def run_through_serializer(attribute_name, value, method)$/;"	f	class:ActiveShepherd
+serialize_value	lib/active_shepherd/aggregate.rb	/^  def serialize_value(attribute_name, value)$/;"	f	class:ActiveShepherd
+set_create_or_destroy_keys	lib/active_shepherd/query_changes.rb	/^  def set_create_or_destroy_keys$/;"	f	class:ActiveShepherd
+setup	test/integration/project_todo_scenario_test.rb	/^  def setup$/;"	f	class:IntegrationTest
+split_hash	lib/active_shepherd/state_method.rb	/^  def split_hash$/;"	f	class:ActiveShepherd
+state	lib/active_shepherd/aggregate.rb	/^  def state$/;"	f	class:ActiveShepherd
+state=	lib/active_shepherd/aggregate.rb	/^  def state=(hash)$/;"	f	class:ActiveShepherd
+state_of_associated_model	lib/active_shepherd/query_state.rb	/^  def state_of_associated_model(model, foreign_key)$/;"	f	class:ActiveShepherd
+state_setter_can_set_timestamps	test/integration/project_todo_scenario_test.rb	/^  def state_setter_can_set_timestamps$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_all_changes_to_associated_objects_show_up_in_aggregate_changes	test/integration/project_todo_scenario_test.rb	/^  def test_all_changes_to_associated_objects_show_up_in_aggregate_changes$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_applying_changes_shows_up_in_model_and_its_associations	test/integration/project_todo_scenario_test.rb	/^  def test_applying_changes_shows_up_in_model_and_its_associations$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_applying_reverse_changes_invokes_apply_change_on_the_reverse_hash	test/integration/project_todo_scenario_test.rb	/^  def test_applying_reverse_changes_invokes_apply_change_on_the_reverse_hash$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_changes_getter_ignores_foreign_key_relationship_to_parent_object	test/integration/project_todo_scenario_test.rb	/^  def test_changes_getter_ignores_foreign_key_relationship_to_parent_object$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_does_not_walk_associations_to_other_entities	test/integration/project_todo_scenario_test.rb	/^  def test_does_not_walk_associations_to_other_entities$/;"	f	class:IntegrationTest
+test_state_changes_getter_and_setter_respect_serialized_attributes	test/integration/project_todo_scenario_test.rb	/^  def test_state_changes_getter_and_setter_respect_serialized_attributes$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_state_getter_does_not_walk_read_only_associations	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_does_not_walk_read_only_associations$/;"	f	class:IntegrationTest
+test_state_getter_gets_attributes	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_gets_attributes$/;"	f	class:IntegrationTest
+test_state_getter_gets_attributes_on_has_one_associated_object	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_gets_attributes_on_has_one_associated_object$/;"	f	class:IntegrationTest
+test_state_getter_ignores_default_scope_attributes	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_ignores_default_scope_attributes$/;"	f	class:IntegrationTest
+test_state_getter_ignores_foreign_key_relationship_to_parent_object	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_ignores_foreign_key_relationship_to_parent_object$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_state_getter_ignores_has_many_through_associations	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_ignores_has_many_through_associations$/;"	f	class:IntegrationTest
+test_state_getter_rejects_id	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_rejects_id$/;"	f	class:IntegrationTest
+test_state_getter_rejects_unpopulated_associations	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_rejects_unpopulated_associations$/;"	f	class:IntegrationTest
+test_state_getter_respects_serialized_attributes	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_respects_serialized_attributes$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_state_getter_symbolizes_all_keys	test/integration/project_todo_scenario_test.rb	/^  def test_state_getter_symbolizes_all_keys$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_state_setter_does_not_walk_read_only_associations	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_does_not_walk_read_only_associations$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations
+test_state_setter_ignores_has_many_through_associations	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_ignores_has_many_through_associations$/;"	f	class:IntegrationTest
+test_state_setter_marks_existing_associations_for_deletion	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_marks_existing_associations_for_deletion$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_state_setter_populates_object_graph	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_populates_object_graph$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_state_setter_resets_unsupplied_attributes_to_default	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_resets_unsupplied_attributes_to_default$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_state_setter_respects_serialized_attributes	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_respects_serialized_attributes$/;"	f	class:IntegrationTest.test_state_getter_does_not_walk_read_only_associations.test_state_setter_does_not_walk_read_only_associations
+test_state_setter_sets_attributes	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_sets_attributes$/;"	f	class:IntegrationTest
+test_state_setter_sets_attributes_on_has_many_associated_object	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_sets_attributes_on_has_many_associated_object$/;"	f	class:IntegrationTest
+test_state_setter_sets_attributes_on_has_one_associated_object	test/integration/project_todo_scenario_test.rb	/^  def test_state_setter_sets_attributes_on_has_one_associated_object$/;"	f	class:IntegrationTest
+traversable_associations	lib/active_shepherd/aggregate.rb	/^  def traversable_associations$/;"	f	class:ActiveShepherd
+traverse_association?	lib/active_shepherd/aggregate.rb	/^  def traverse_association?(association)$/;"	f	class:ActiveShepherd
+untraversable_association_names	lib/active_shepherd/aggregate.rb	/^  def untraversable_association_names$/;"	f	class:ActiveShepherd
+untraversable_associations	lib/active_shepherd/aggregate.rb	/^  def untraversable_associations$/;"	f	class:ActiveShepherd
+valid_aggregate_changes?	lib/active_shepherd/aggregate_root.rb	/^  def valid_aggregate_changes?(changes)$/;"	f	class:ActiveShepherd

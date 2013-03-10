@@ -2,6 +2,11 @@ require "bundler/gem_tasks"
 
 require "rake/testtask"
 
+desc "Update ctags"
+task :ctags do
+  `ctags -R lib test`
+end
+
 desc "Jump into a console with the test environment loaded"
 task :console do
   $:.push File.expand_path("../test", __FILE__)
