@@ -16,16 +16,8 @@ private
   end
 
   def apply_changes_to_associations
-    association_reflections = aggregate.traversable_associations
-
-    hash.each do |attribute_or_association_name, (before, after)|
-      association_reflection = association_reflections[attribute_or_association_name]
-      # FIXME: we need to ignore associations that we don't traverse (untraversable)
-
-      if association_reflection.present?
-        raise ::ActiveShepherd::AggregateRoot::BadChangeError unless after.nil?
-        apply_changes_to_association association_reflection, before
-      end
+    associations.each do |association_name, (association_reflection, changes_or_changes_set)|
+      apply_changes_to_association association_reflection, changes_or_changes_set
     end
   end
 
