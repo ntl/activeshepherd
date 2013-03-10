@@ -9,7 +9,6 @@ class ActiveShepherd::State
   def state
     default_attributes = aggregate.default_attributes
 
-    {}.tap do |hash|
       aggregate.model.attributes_before_type_cast.each do |attribute_name, value|
         next if aggregate.excluded_attributes.include?(attribute_name)
 
@@ -24,7 +23,8 @@ class ActiveShepherd::State
         serialized = get_via_association(association_reflection)
         hash[name.to_sym] = serialized unless serialized.blank?
       end
-    end
+
+    hash
   end
 
 private
