@@ -40,25 +40,30 @@ private
 
     before.each do |index, changes_for_associated_model|
       # FIXME
-      until association.size >= (index + 1)
-        association.build
-      end
+      association.build until association.size >= (index + 1)
       # /FIXME
 
       associated_model = association[index]
 
       if associated_model.nil?
-        raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Can't find record ##{index}"
+        raise ::ActiveShepherd::AggregateRoot::BadChangeError,
+          "Can't find record ##{index}"
       end
 
-      ::ActiveShepherd::Aggregate.new(associated_model, foreign_key).changes = changes_for_associated_model
+      apply_changes_to_associated_model associated_model, foreign_key,
+        changes_for_associated_model
     end
   end
-  
+
   def apply_changes_to_has_one_association(association_reflection, foreign_key, before, after)
     associated_model = aggregate.model.send(association_reflection.name)
     changes_for_associated_model = before
-    ::ActiveShepherd::Aggregate.new(associated_model, foreign_key).changes = changes_for_associated_model
+    apply_changes_to_associated_model associated_model, foreign_key,
+      changes_for_associated_model
+  end
+
+  def apply_changes_to_associated_model(model, foreign_key, changes)
+    ActiveShepherd::Aggregate.new(model, foreign_key).changes = changes
   end
 
   def apply_changes_to_attribute(attribute_name, before, after)
