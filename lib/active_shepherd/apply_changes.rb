@@ -9,8 +9,10 @@ class ActiveShepherd::ApplyChanges
   def apply_changes
     handle_create_or_destroy_keys
 
+    association_reflections = aggregate.traversable_associations
+
     hash.each do |attribute_or_association_name, (before, after)|
-      association_reflection = aggregate.model.class.reflect_on_association(attribute_or_association_name.to_sym)
+      association_reflection = association_reflections[attribute_or_association_name]
 
       if association_reflection.present?
         if aggregate.traverse_association?(association_reflection)
