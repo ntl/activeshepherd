@@ -34,7 +34,7 @@ private
   def get_changes_from_has_many_association(name, foreign_key)
     records = aggregate.model.send(name).each
     record_changes = records.with_object({}).with_index do |(associated_model, list), index|
-      changes = get_changes_for_associated_model associated_model, foreign_key
+      changes = get_changes_from_associated_model associated_model, foreign_key
       list[index] = changes unless changes.empty?
     end
     hash[name] = record_changes unless record_changes.empty?
@@ -44,11 +44,11 @@ private
     associated_model = aggregate.model.send(name)
     return unless associated_model.present?
 
-    changes = get_changes_for_associated_model associated_model, foreign_key
+    changes = get_changes_from_associated_model associated_model, foreign_key
     hash[name] = changes unless changes.empty?
   end
 
-  def get_changes_for_associated_model(model, foreign_key)
+  def get_changes_from_associated_model(model, foreign_key)
     ActiveShepherd::Aggregate.new(model, foreign_key).changes
   end
 

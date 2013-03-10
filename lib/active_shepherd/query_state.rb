@@ -26,26 +26,26 @@ private
   end
 
   def get_state_from_association(name, association_reflection)
-    serialized = association_state(name, association_reflection)
-    hash[name.to_sym] = serialized unless serialized.blank?
+    foreign_key_to_self = association_reflection.foreign_key
+    send "get_state_from_#{association_reflection.macro}_association",
+      association_reflection.name, foreign_key_to_self
   end
 
-  def association_state(name, association_reflection)
-    foreign_key_to_self = association_reflection.foreign_key
+  def get_state_from_has_many_association(name, foreign_key)
+    state = aggregate.model.send(name).map do |associated_model|
+      get_state_from_associated_model associated_model, foreign_key
+    end
+    hash[name] = state unless state.empty?
+  end
 
-    if association_reflection.macro == :has_one
-      associated_model = aggregate.model.send name
-      if associated_model
-        state_of_associated_model associated_model, foreign_key_to_self
-      end
-    elsif association_reflection.macro == :has_many
-      aggregate.model.send(name).map do |associated_model|
-        state_of_associated_model associated_model, foreign_key_to_self
-      end
+  def get_state_from_has_one_association(name, foreign_key)
+    associated_model = aggregate.model.send name
+    if associated_model
+      hash[name] = get_state_from_associated_model associated_model, foreign_key 
     end
   end
 
-  def state_of_associated_model(model, foreign_key)
+  def get_state_from_associated_model(model, foreign_key)
     ActiveShepherd::Aggregate.new(model, foreign_key).state
   end
 end
