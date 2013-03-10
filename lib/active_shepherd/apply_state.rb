@@ -32,30 +32,38 @@ class ActiveShepherd::ApplyState
   end
 
   def apply_state_to_root_model
-    keys[:attributes].each do |attribute_name|
-      value = aggregate.deserialize_value attribute_name, hash[attribute_name]
+    attributes.each do |attribute_name, raw_value|
+      value = aggregate.deserialize_value attribute_name, raw_value
       aggregate.model.send "#{attribute_name}=", value
     end
   end
 
   def apply_state_to_associations
-    keys[:associations].each do |association_name|
-      association_reflection = aggregate.traversable_associations[association_name]
-      apply_state_to_association association_reflection, hash[association_name]
+    associations.each do |association_name, (association_reflection, state)|
+      apply_state_to_association association_reflection, state
     end
+  end
+
+  def associations
+    split_hash[:associations]
+  end
+
+  def attributes
+    split_hash[:attributes]
   end
 
 private
 
-  def keys
-    @keys ||= begin
-      keys_hash = { attributes: [], associations: [] }
-      hash.keys.each_with_object(keys_hash) do |key_name, keys|
-        if aggregate.traversable_associations.keys.include? key_name
-          keys[:associations] << key_name
-        elsif aggregate.untraversable_associations.keys.include? key_name
+  def split_hash
+    @split_hash ||= begin
+      split_hash = { associations: {}, attributes: {} }
+      hash.each_with_object(split_hash) do |(key, value), by_key|
+        traversable_association = aggregate.traversable_associations[key]
+        if traversable_association.present?
+          by_key[:associations][key] = [traversable_association, value]
+        elsif aggregate.untraversable_association_names.include? key
         else
-          keys[:attributes] << key_name
+          by_key[:attributes][key] = value
         end
       end
     end
