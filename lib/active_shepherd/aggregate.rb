@@ -18,8 +18,11 @@ class ActiveShepherd::Aggregate
   end
 
   def traversable_associations
-    model.class.reflect_on_all_associations.select do |association|
-      traverse_association?(association)
+    all_associations = model.class.reflect_on_all_associations
+    all_associations.each_with_object({}) do |association_reflection, hash|
+      if traverse_association?(association_reflection)
+        hash[association_reflection.name] = association_reflection
+      end
     end
   end
 
@@ -40,8 +43,8 @@ class ActiveShepherd::Aggregate
 
   # XXX[
   def traverse_each_association(&block)
-    traversable_associations.each do |association|
-      yield(association.name.to_sym, association.macro, association)
+    traversable_associations.each do |name, association|
+      yield(name.to_sym, association.macro, association)
     end
   end
 

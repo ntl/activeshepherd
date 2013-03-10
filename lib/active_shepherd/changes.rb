@@ -11,7 +11,7 @@ class ActiveShepherd::Changes
 
     add_changes_on_root_model
 
-    aggregate.traversable_associations.each do |association_reflection|
+    aggregate.traversable_associations.values.each do |association_reflection|
       add_changes_on_association association_reflection
     end
   end
