@@ -13,9 +13,17 @@ class ActiveShepherd::Aggregate
     ActiveShepherd::Changes.changes(self)
   end
 
+  # XXX[
   def traverse_each_association(&block)
     traversable_associations.each do |association|
       yield(association.name.to_sym, association.macro, association)
+    end
+  end
+  # ]XXX
+
+  def traversable_associations
+    model.class.reflect_on_all_associations.select do |association|
+      traverse_association?(association)
     end
   end
 
@@ -185,12 +193,6 @@ private
       serializer.send(method, value)
     else
       value
-    end
-  end
-
-  def traversable_associations
-    model.class.reflect_on_all_associations.select do |association|
-      traverse_association?(association)
     end
   end
 
