@@ -1,28 +1,25 @@
 class ActiveShepherd::QueryState < ActiveShepherd::StateMethod
   def query_state
-    get_state_from_root_model
-    get_state_from_associations
-    hash
+    hash.update get_state_from_root_model
+    hash.update get_state_from_associations
   end
 
 private
 
   def get_state_from_root_model
-    aggregate.model.attributes_before_type_cast.each do |attribute_name, value|
-      next if aggregate.excluded_attributes.include?(attribute_name)
-
-      value = aggregate.serialize_value(attribute_name, value)
-
-      unless value == aggregate.default_attributes[attribute_name]
-        hash[attribute_name.to_sym] = value
+    aggregate.raw_attributes.each_with_object({}) do |(name, value), h|
+      next if aggregate.excluded_attributes.include?(name)
+      value = aggregate.serialize_value(name, value)
+      unless value == aggregate.default_attributes[name]
+        h[name.to_sym] = value
       end
     end
   end
 
   def get_state_from_associations
-    aggregate.traversable_associations.each do |name, association_reflection|
+    aggregate.traversable_associations.each_with_object({}) do |(name, association_reflection), h|
       state = get_state_from_association name, association_reflection
-      hash[name.to_sym] = state unless state.blank?
+      h[name.to_sym] = state unless state.blank?
     end
   end
 

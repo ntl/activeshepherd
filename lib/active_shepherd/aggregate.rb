@@ -29,6 +29,10 @@ class ActiveShepherd::Aggregate
     ActiveShepherd::ApplyState.apply_state(self, hash)
   end
 
+  def raw_attributes
+    model.attributes_before_type_cast
+  end
+
   def traversable_associations
     associations.traversable
   end
