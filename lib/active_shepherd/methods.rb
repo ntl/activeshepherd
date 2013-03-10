@@ -2,7 +2,7 @@ class ActiveShepherd::Methods
   class ApplyChanges < ActiveShepherd::ApplyMethod
     def apply_changes
       handle_create_or_destroy_keys
-      @traversal.traverse
+      traverse!
     end
 
     def handle_attribute(attribute_name, before_and_after)
@@ -190,7 +190,7 @@ class ActiveShepherd::Methods
     def apply_state
       mark_all_associated_objects_for_destruction
       apply_default_state_to_root_model
-      @traversal.traverse
+      traverse!
     end
 
     def handle_attribute(attribute_name, raw_value)

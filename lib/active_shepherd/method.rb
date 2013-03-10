@@ -13,6 +13,14 @@ class ActiveShepherd::Method
   def initialize(aggregate)
     @aggregate = aggregate
   end
+
+  def traverse!
+    ActiveShepherd::Traversal.new(
+      self,
+      attributes: attributes,
+      associations: associations,
+    ).traverse
+  end
 end
 
 module ActiveShepherd
@@ -60,11 +68,6 @@ class ActiveShepherd::ApplyMethod < ActiveShepherd::Method
   def initialize(aggregate, hash)
     super aggregate
     @split_hash = build_split_hash(hash)
-    @traversal = ActiveShepherd::Traversal.new(
-      self,
-      attributes: attributes,
-      associations: associations,
-    )
   end
 
 private
