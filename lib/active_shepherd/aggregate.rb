@@ -17,20 +17,16 @@ class ActiveShepherd::Aggregate
     ActiveShepherd::ApplyChanges.apply_changes(self, hash)
   end
 
-  def traversable_associations
-    all_associations = model.class.reflect_on_all_associations
-    all_associations.each_with_object({}) do |association_reflection, hash|
-      if traverse_association?(association_reflection)
-        hash[association_reflection.name] = association_reflection
-      end
-    end
+  def state
+    ActiveShepherd::State.new(self).state
   end
 
-  def traverse_association?(association)
-    return false if association.options[:readonly]
-    return false if association.macro == :belongs_to
+  def traversable_associations
+    associations.traversable
+  end
 
-    true
+  def untraversable_associations
+    associations.untraversable
   end
 
   def serialize_value(attribute_name, value)
@@ -45,44 +41,6 @@ class ActiveShepherd::Aggregate
   def traverse_each_association(&block)
     traversable_associations.each do |name, association|
       yield(name.to_sym, association.macro, association)
-    end
-  end
-
-  def get_via_association(association_reflection)
-    foreign_key_to_self = association_reflection.foreign_key
-    model_or_collection_of_models = model.send(association_reflection.name)
-
-    if model_or_collection_of_models.nil?
-      # noop
-    elsif association_reflection.macro == :belongs_to
-      # noop
-    elsif association_reflection.macro == :has_many
-      model_or_collection_of_models.to_a.select(&:present?).map do |associated_model|
-        ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).state
-      end
-    else
-      ::ActiveShepherd::Aggregate.new(model_or_collection_of_models, foreign_key_to_self).state
-    end
-  end
-
-  def state
-    default_attributes = model.class.new.attributes
-
-    {}.tap do |hash|
-      model.attributes_before_type_cast.each do |attribute_name, value|
-        next if excluded_attributes.include?(attribute_name)
-
-        value = serialize_value(attribute_name, value)
-
-        unless value == default_attributes[attribute_name]
-          hash[attribute_name.to_sym] = value
-        end
-      end
-
-      traverse_each_association do |name, macro, association_reflection|
-        serialized = get_via_association(association_reflection)
-        hash[name.to_sym] = serialized unless serialized.blank?
-      end
     end
   end
 
@@ -141,6 +99,21 @@ class ActiveShepherd::Aggregate
 
 private
 
+  def associations
+    @associations ||= begin
+      all_associations = model.class.reflect_on_all_associations
+      ostruct = OpenStruct.new untraversable: {}, traversable: {}
+      all_associations.each_with_object(ostruct) do |association_reflection, ostruct|
+        if traverse_association?(association_reflection)
+          key = :traversable
+        else
+          key = :untraversable
+        end
+        ostruct.send(key)[association_reflection.name] = association_reflection
+      end
+    end
+  end
+
   def run_through_serializer(attribute_name, value, method)
     serializer = model.class.serialized_attributes[attribute_name.to_s]
     if serializer
@@ -159,5 +132,13 @@ private
       end
     end
   end
+
+  def traverse_association?(association)
+    return false if association.options[:readonly]
+    return false if association.macro == :belongs_to
+
+    true
+  end
+
 
 end
