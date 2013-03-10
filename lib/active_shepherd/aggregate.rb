@@ -45,14 +45,6 @@ class ActiveShepherd::Aggregate
     run_through_serializer(attribute_name, value, :load)
   end
 
-  # XXX[
-  def traverse_each_association(&block)
-    traversable_associations.each do |name, association|
-      yield(name.to_sym, association.macro, association)
-    end
-  end
-  # ]XXX
-
 private
 
   def associations
