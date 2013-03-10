@@ -24,6 +24,10 @@ class ActiveShepherd::ApplyChanges
     end
   end
 
+  def self.apply_changes(aggregate, hash)
+    new(aggregate).apply_changes(hash)
+  end
+
 private
 
   def apply_changes_to_association(association_reflection, changes_or_changes_set)

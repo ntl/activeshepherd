@@ -14,7 +14,7 @@ class ActiveShepherd::Aggregate
   end
 
   def changes=(hash)
-    ActiveShepherd::ApplyChanges.new(self, hash).apply_changes
+    ActiveShepherd::ApplyChanges.apply_changes(self, hash)
   end
 
   def traversable_associations
