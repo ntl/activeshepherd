@@ -1,7 +1,7 @@
 class ActiveShepherd::StateMethod
   attr_reader :aggregate, :hash
 
-  def initialize(aggregate, hash)
+  def initialize(aggregate, hash = {})
     @aggregate = aggregate
     @hash      = hash
   end
@@ -40,6 +40,8 @@ class ActiveShepherd::ApplyState < ActiveShepherd::StateMethod
     apply_state_to_associations
   end
 
+private
+
   def apply_default_state_to_root_model
     default_attributes = aggregate.default_attributes
     ignored_attribute_names = hash.keys.map(&:to_s) + aggregate.excluded_attributes
@@ -71,18 +73,6 @@ class ActiveShepherd::ApplyState < ActiveShepherd::StateMethod
     end
   end
 
-private
-
-  def mark_all_associated_objects_for_destruction
-    aggregate.traversable_associations.each do |name, association_reflection|
-      if association_reflection.macro == :has_many
-        aggregate.model.send(name).each { |record| record.mark_for_destruction }
-      elsif association_reflection.macro == :has_one
-        aggregate.model.send(name).try(&:mark_for_destruction)
-      end
-    end
-  end
-
   def apply_state_to_association(association_reflection, state)
     foreign_key_to_self = association_reflection.foreign_key
 
@@ -105,5 +95,15 @@ private
 
   def apply_state_to_associated_model(associated_model, foreign_key, state)
     ActiveShepherd::Aggregate.new(associated_model, foreign_key).state = state
+  end
+
+  def mark_all_associated_objects_for_destruction
+    aggregate.traversable_associations.each do |name, association_reflection|
+      if association_reflection.macro == :has_many
+        aggregate.model.send(name).each { |record| record.mark_for_destruction }
+      elsif association_reflection.macro == :has_one
+        aggregate.model.send(name).try(&:mark_for_destruction)
+      end
+    end
   end
 end
