@@ -3,10 +3,12 @@ class ActiveShepherd::ApplyChanges
 
   def initialize(aggregate, hash)
     @aggregate = aggregate
-    @hash      = hash
+    @hash      = hash.dup
   end
 
   def apply_changes
+    handle_create_or_destroy_keys
+
     hash.each do |attribute_or_association_name, (before, after)|
       association_reflection = aggregate.model.class.reflect_on_association(attribute_or_association_name.to_sym)
 
@@ -43,9 +45,6 @@ class ActiveShepherd::ApplyChanges
             ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes = changes_for_associated_model
           end
         end
-      elsif attribute_or_association_name.to_s == "_create"
-      elsif attribute_or_association_name.to_s == "_destroy"
-        aggregate.model.mark_for_destruction
       else
         attribute_name = attribute_or_association_name
         setter = "#{attribute_or_association_name}="
@@ -63,6 +62,15 @@ class ActiveShepherd::ApplyChanges
 
         aggregate.model.send(setter, after)
       end
+    end
+  end
+
+private
+
+  def handle_create_or_destroy_keys
+    hash.delete :_create
+    if hash.delete :_destroy
+      aggregate.model.mark_for_destruction
     end
   end
 end
