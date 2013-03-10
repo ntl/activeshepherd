@@ -1,4 +1,6 @@
 class ActiveShepherd::Method
+  attr_reader :associations, :attributes
+
   def self.inherited(base)
     # If you're looking for magic, you've come to the right place
     return unless base.name.match /^ActiveShepherd::Methods::/
@@ -10,16 +12,12 @@ class ActiveShepherd::Method
 
   attr_reader :aggregate
 
-  def initialize(aggregate)
-    @aggregate = aggregate
-  end
+  def initialize(*args)
+    @aggregate    = args.shift
+    @associations = {}
+    @attributes   = {}
 
-  def traverse!
-    ActiveShepherd::Traversal.new(
-      self,
-      attributes: attributes,
-      associations: associations,
-    ).traverse
+    setup *args
   end
 end
 
@@ -60,45 +58,59 @@ module ActiveShepherd
   end
 end
 
-class ActiveShepherd::QueryMethod < ActiveShepherd::Method ; end
+class ActiveShepherd::QueryMethod < ActiveShepherd::Method
+  attr_reader :query
 
-class ActiveShepherd::ApplyMethod < ActiveShepherd::Method
-  attr_reader :split_hash
+  def initialize(*args)
+    super
+    @query = {}
+  end
 
-  def initialize(aggregate, hash)
-    super aggregate
-    @split_hash = build_split_hash(hash)
+  def traverse!
+    ActiveShepherd::Traversal.new(
+      self,
+      attributes: attributes,
+      associations: associations,
+    ).traverse
   end
 
 private
 
-  def associations
-    split_hash[:associations]
+  def setup
   end
+end
 
-  def attributes
-    split_hash[:attributes]
+class ActiveShepherd::ApplyMethod < ActiveShepherd::Method
+  attr_reader :meta_action
+
+  def traverse!
+    ActiveShepherd::Traversal.new(
+      self,
+      attributes: attributes,
+      associations: associations,
+    ).traverse
   end
 
   def create?
-    split_hash[:meta_action] == :_create
+    meta_action == :_create
   end
 
   def destroy?
-    split_hash[:meta_action] == :_destroy
+    meta_action == :_destroy
   end
 
-  def build_split_hash(hash)
-    split_hash = { associations: {}, attributes: {} }
-    hash.each_with_object(split_hash) do |(key, value), by_key|
+private
+
+  def setup(hash)
+    hash.each do |key, value|
       traversable_association = aggregate.traversable_associations[key]
       if traversable_association.present?
-        by_key[:associations][key] = [traversable_association, value]
+        associations[key] = [traversable_association, value]
       elsif aggregate.untraversable_association_names.include? key
       elsif [:_create, :_destroy].include? key.to_sym
-        by_key[:meta_action] = key.to_sym
+        @meta_action = key.to_sym
       else
-        by_key[:attributes][key] = value
+        attributes[key] = value
       end
     end
   end

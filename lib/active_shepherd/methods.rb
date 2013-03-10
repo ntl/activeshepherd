@@ -139,6 +139,9 @@ class ActiveShepherd::Methods
       {}.tap do |hash|
         hash.update get_state_from_root_model
         hash.update get_state_from_associations
+
+        traverse!
+        hash.update query
       end
     end
 
