@@ -1,11 +1,4 @@
-class ActiveShepherd::QueryState
-  attr_reader :aggregate, :hash
-
-  def initialize(aggregate)
-    @aggregate = aggregate
-    @hash = {}
-  end
-
+class ActiveShepherd::QueryState < ActiveShepherd::StateMethod
   def query_state
     add_state_from_root_model
 
@@ -14,10 +7,6 @@ class ActiveShepherd::QueryState
     end
 
     hash
-  end
-
-  def self.query_state(aggregate)
-    new(aggregate).query_state
   end
 
 private

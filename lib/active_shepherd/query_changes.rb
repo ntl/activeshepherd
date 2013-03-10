@@ -1,20 +1,9 @@
-class ActiveShepherd::QueryChanges
-  attr_reader :aggregate, :hash
-
-  def initialize(aggregate)
-    @aggregate = aggregate
-    @hash      = {}
-  end
-
+class ActiveShepherd::QueryChanges < ActiveShepherd::StateMethod
   def query_changes
     set_create_or_destroy_keys
     add_changes_on_root_model
     add_changes_on_associations
     hash
-  end
-
-  def self.query_changes(aggregate)
-    new(aggregate).query_changes
   end
 
 private

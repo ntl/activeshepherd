@@ -1,12 +1,7 @@
-class ActiveShepherd::ApplyChanges
-  attr_reader :aggregate, :hash
-
-  def initialize(aggregate, hash)
-    @aggregate = aggregate
-    @hash      = hash.dup
-  end
-
+class ActiveShepherd::ApplyChanges < ActiveShepherd::StateMethod
   def apply_changes
+    @hash = @hash.dup # XXX
+
     handle_create_or_destroy_keys
 
     association_reflections = aggregate.traversable_associations
@@ -24,10 +19,6 @@ class ActiveShepherd::ApplyChanges
         apply_changes_to_attribute attribute_name, before, after
       end
     end
-  end
-
-  def self.apply_changes(aggregate, hash)
-    new(aggregate, hash).apply_changes
   end
 
 private
