@@ -3,6 +3,7 @@ class ActiveShepherd::ApplyChanges < ActiveShepherd::StateMethod
     @hash = @hash.dup # XXX
 
     handle_create_or_destroy_keys
+    apply_changes_to_root_model
 
     association_reflections = aggregate.traversable_associations
 
@@ -13,15 +14,17 @@ class ActiveShepherd::ApplyChanges < ActiveShepherd::StateMethod
       if association_reflection.present?
         raise ::ActiveShepherd::AggregateRoot::BadChangeError unless after.nil?
         apply_changes_to_association association_reflection, before
-      elsif aggregate.untraversable_associations.keys.include? attribute_or_association_name
-      else
-        attribute_name = attribute_or_association_name
-        apply_changes_to_attribute attribute_name, before, after
       end
     end
   end
 
 private
+
+  def apply_changes_to_root_model
+    attributes.each do |attribute_name, (before, after)|
+      apply_changes_to_attribute attribute_name, before, after
+    end
+  end
 
   def apply_changes_to_association(association_reflection, changes_or_changes_set)
     foreign_key_to_self = association_reflection.foreign_key
@@ -66,7 +69,7 @@ private
 
     unless current_value == before
       raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Expecting "\
-        "`#{attribute_or_association_name} to be `#{before.inspect}', not "\
+        "`#{attribute_name} to be `#{before.inspect}', not "\
         "`#{current_value.inspect}'"
     end
 
