@@ -14,7 +14,7 @@ class ActiveShepherd::Aggregate
   end
 
   def changes
-    ActiveShepherd::Changes.changes(self)
+    ActiveShepherd::QueryChanges.query_changes(self)
   end
 
   def changes=(hash)
@@ -22,7 +22,7 @@ class ActiveShepherd::Aggregate
   end
 
   def state
-    ActiveShepherd::State.state(self)
+    ActiveShepherd::QueryState.query_state(self)
   end
 
   def state=(hash)

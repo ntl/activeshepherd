@@ -1,4 +1,4 @@
-class ActiveShepherd::State
+class ActiveShepherd::QueryState
   attr_reader :aggregate, :hash
 
   def initialize(aggregate)
@@ -6,7 +6,7 @@ class ActiveShepherd::State
     @hash = {}
   end
 
-  def state
+  def query_state
     add_state_from_root_model
 
     aggregate.traversable_associations.each do |name, association_reflection|
@@ -16,8 +16,8 @@ class ActiveShepherd::State
     hash
   end
 
-  def self.state(aggregate)
-    new(aggregate).state
+  def self.query_state(aggregate)
+    new(aggregate).query_state
   end
 
 private

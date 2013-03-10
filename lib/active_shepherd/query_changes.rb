@@ -1,4 +1,4 @@
-class ActiveShepherd::Changes
+class ActiveShepherd::QueryChanges
   attr_reader :aggregate, :hash
 
   def initialize(aggregate)
@@ -13,7 +13,7 @@ class ActiveShepherd::Changes
     hash
   end
 
-  def self.changes(aggregate)
+  def self.query_changes(aggregate)
     new(aggregate).query_changes
   end
 
