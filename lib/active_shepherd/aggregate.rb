@@ -10,48 +10,21 @@ class ActiveShepherd::Aggregate
   end
 
   def changes
-    {}.tap do |hash|
-      if !@model.persisted?
-        hash[:_create] = '1'
-      elsif @model.marked_for_destruction?
-        hash[:_destroy] = '1'
-      end
+    ActiveShepherd::Changes.new(self).changes
+  end
 
-      @model.changes.each do |k,v|
-        v_or_attribute = @model.attributes_before_type_cast[k]
-        v.map! do |possible_serialized_value|
-          serialize_value(k, possible_serialized_value)
-        end
-
-        hash[k.to_sym] = v unless excluded_attributes.include?(k.to_s)
-      end
-
-      each_traversable_association do |name, macro, association_reflection|
-        foreign_key_to_self = association_reflection.foreign_key
-
-        if macro == :has_many
-          records = model.send(name).each
-          record_changes = records.with_object({}).with_index do |(associated_model, list), index|
-            changes = ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes
-            unless changes.empty?
-              list[index] = changes
-            end
-            list
-          end
-          unless record_changes.empty?
-            hash[name] = record_changes
-          end
-        elsif macro == :has_one
-          associated_model = model.send(name)
-          if associated_model
-            changes = ::ActiveShepherd::Aggregate.new(associated_model, foreign_key_to_self).changes
-            unless changes.empty?
-              hash[name] = changes
-            end
-          end
-        end
-      end
+  def traverse_each_association(&block)
+    traversable_associations.each do |association|
+      yield(association.name.to_sym, association.macro, association)
     end
+  end
+
+  def serialize_value(attribute_name, value)
+    run_through_serializer(attribute_name, value, :dump)
+  end
+
+  def deserialize_value(attribute_name, value)
+    run_through_serializer(attribute_name, value, :load)
   end
 
   def changes=(hash)
@@ -163,7 +136,7 @@ class ActiveShepherd::Aggregate
         end
       end
 
-      each_traversable_association do |name, macro, association_reflection|
+      traverse_each_association do |name, macro, association_reflection|
         serialized = get_via_association(association_reflection)
         hash[name.to_sym] = serialized unless serialized.blank?
       end
@@ -206,14 +179,6 @@ class ActiveShepherd::Aggregate
 
 private
 
-  def serialize_value(attribute_name, value)
-    run_through_serializer(attribute_name, value, :dump)
-  end
-
-  def deserialize_value(attribute_name, value)
-    run_through_serializer(attribute_name, value, :load)
-  end
-
   def run_through_serializer(attribute_name, value, method)
     serializer = model.class.serialized_attributes[attribute_name.to_s]
     if serializer
@@ -223,11 +188,9 @@ private
     end
   end
 
-  def each_traversable_association
+  def traversable_associations
     model.class.reflect_on_all_associations.select do |association|
-      next unless traverse_association?(association)
-
-      yield(association.name.to_sym, association.macro, association)
+      traverse_association?(association)
     end
   end
 
@@ -239,7 +202,7 @@ private
   end
 
   def mark_all_associated_objects_for_destruction
-    each_traversable_association do |name, macro, reflection|
+    traverse_each_association do |name, macro, reflection|
       if macro == :has_many
         model.send(name).each { |record| record.mark_for_destruction }
       elsif macro == :has_one

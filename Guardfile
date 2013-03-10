@@ -11,4 +11,6 @@ guard 'minitest' do
   watch(%r|^test/integration/project_todo_scenario/(.*)\.rb$|) do 
     "test/integration/project_todo_scenario_test.rb"
   end
+
+  watch(%r{^lib/.*\.rb$})  { |m| "test/integration/project_todo_scenario_test.rb" }
 end
