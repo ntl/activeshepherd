@@ -127,6 +127,7 @@ private
     end
   end
 
+  # XXX[
   def mark_all_associated_objects_for_destruction
     traverse_each_association do |name, macro, reflection|
       if macro == :has_many
@@ -136,6 +137,7 @@ private
       end
     end
   end
+  # ]XXX
 
   def traverse_association?(association)
     return false if association.options[:readonly]
@@ -143,6 +145,5 @@ private
 
     true
   end
-
 
 end
