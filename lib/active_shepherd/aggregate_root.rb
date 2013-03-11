@@ -1,8 +1,4 @@
 module ActiveShepherd::AggregateRoot
-  AggregateMismatchError = Class.new(StandardError)
-  BadChangeError         = Class.new(StandardError)
-  InvalidChangesError    = Class.new(StandardError)
-
   def self.included(base)
     base.extend(ClassMethods)
   end

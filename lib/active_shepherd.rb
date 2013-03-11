@@ -13,6 +13,10 @@ require 'active_shepherd/traversal'
 require 'active_shepherd/version'
 
 module ActiveShepherd
+  AggregateMismatchError = Class.new(StandardError)
+  BadChangeError         = Class.new(StandardError)
+  InvalidChangesError    = Class.new(StandardError)
+
   def self.deep_reverse_changes(changes)
     DeepReverseChanges.new(changes).reverse
   end
