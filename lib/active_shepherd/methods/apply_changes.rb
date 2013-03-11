@@ -26,7 +26,8 @@ class ActiveShepherd::Methods::ApplyChanges < ActiveShepherd::ApplyMethod
 
   def handle_has_one_association(reflection, changes)
     associated_model = aggregate.model.public_send reflection.name
-    recurse(associated_model, reflection.foreign_key).changes = changes
+    self.class.apply_changes recurse(associated_model, reflection.foreign_key),
+      changes
   end
 
 private
@@ -44,7 +45,8 @@ private
         raise ::ActiveShepherd::AggregateRoot::BadChangeError,
           "Can't find record ##{index}"
       end
-      recurse(associated_model, reflection.foreign_key).changes = changes
+      self.class.apply_changes recurse(associated_model, reflection.foreign_key),
+        changes
     end
   end
 end

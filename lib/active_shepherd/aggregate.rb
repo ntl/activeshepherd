@@ -13,22 +13,6 @@ class ActiveShepherd::Aggregate
     model.class.new.attributes
   end
 
-  def changes
-    ActiveShepherd::Methods::QueryChanges.query_changes(self)
-  end
-
-  def changes=(hash)
-    ActiveShepherd::Methods::ApplyChanges.apply_changes(self, hash)
-  end
-
-  def state
-    ActiveShepherd::Methods::QueryState.query_state(self)
-  end
-
-  def state=(hash)
-    ActiveShepherd::Methods::ApplyState.apply_state(self, hash)
-  end
-
   def raw_attributes
     model.attributes_before_type_cast
   end

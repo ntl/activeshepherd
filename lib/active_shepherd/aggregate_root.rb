@@ -28,7 +28,7 @@ module ActiveShepherd::AggregateRoot
   # Raises an ActiveShepherd::AggregateMismatchError if any objects in the
   #   aggregate are being asked to change attributes that do not exist.
   def aggregate_changes=(changes)
-    aggro.changes = changes
+    ActiveShepherd::Methods::ApplyChanges.apply_changes aggro, changes
   end
 
   # Public: Reverses the effect of #aggregate_changes=
@@ -46,7 +46,7 @@ module ActiveShepherd::AggregateRoot
   #
   # Returns all changes in the aggregate
   def aggregate_changes
-    aggro.changes
+    ActiveShepherd::Methods::QueryChanges.query_changes aggro
   end
 
   # Public: Injects the entire state of the aggregate from a serializable blob.
@@ -59,7 +59,7 @@ module ActiveShepherd::AggregateRoot
   # Raises an AggregateMismatchError if the blob contains references to objects
   #   or attributes that do not exist in this aggregate.
   def aggregate_state=(blob)
-    aggro.state = blob
+    ActiveShepherd::Methods::ApplyState.apply_state aggro, blob
   end
 
   # Public: Returns the entire state of the aggregate as a serializable blob.
@@ -72,7 +72,7 @@ module ActiveShepherd::AggregateRoot
   #
   # Returns serializable blob.
   def aggregate_state
-    aggro.state
+    ActiveShepherd::Methods::QueryState.query_state aggro
   end
 
   # Public: Validates a set of changes for the aggregate root.

@@ -14,13 +14,15 @@ class ActiveShepherd::Methods::ApplyState < ActiveShepherd::ApplyMethod
     association = aggregate.model.send reflection.name
     collection_state.each do |state|
       associated_model = association.build
-      recurse(associated_model, reflection.foreign_key).state = state
+      self.class.apply_state recurse(associated_model, reflection.foreign_key),
+        state
     end
   end
 
   def handle_has_one_association(reflection, state)
     associated_model = aggregate.model.send "build_#{reflection.name}"
-    recurse(associated_model, reflection.foreign_key).state = state
+    self.class.apply_state recurse(associated_model, reflection.foreign_key),
+      state
   end
 
 private

@@ -11,7 +11,7 @@ class ActiveShepherd::Methods::QueryState < ActiveShepherd::QueryMethod
   def handle_has_many_association(reflection)
     association = aggregate.model.send reflection.name
     collection_state = association.map do |associated_model|
-      recurse(associated_model, reflection.foreign_key).state
+      self.class.query_state recurse(associated_model, reflection.foreign_key)
     end
     query[reflection.name] = collection_state unless collection_state.blank?
   end
@@ -19,7 +19,7 @@ class ActiveShepherd::Methods::QueryState < ActiveShepherd::QueryMethod
   def handle_has_one_association(reflection)
     associated_model = aggregate.model.send reflection.name
     if associated_model
-      state = recurse(associated_model, reflection.foreign_key).state
+      state = self.class.query_state recurse(associated_model, reflection.foreign_key)
       query[reflection.name] = state unless state.blank?
     end
   end

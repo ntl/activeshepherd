@@ -13,7 +13,7 @@ class ActiveShepherd::Methods::QueryChanges < ActiveShepherd::QueryMethod
     association = aggregate.model.send reflection.name
 
     collection_changes = association.each.with_object({}).with_index do |(associated_model, h), index|
-      changes = recurse(associated_model, reflection.foreign_key).changes
+      changes = self.class.query_changes recurse(associated_model, reflection.foreign_key)
       h[index] = changes unless changes.blank?
     end
 
@@ -26,7 +26,7 @@ class ActiveShepherd::Methods::QueryChanges < ActiveShepherd::QueryMethod
     associated_model = aggregate.model.send reflection.name
     return unless associated_model.present?
 
-    changes = recurse(associated_model, reflection.foreign_key).changes
+    changes = self.class.query_changes recurse(associated_model, reflection.foreign_key)
     query[reflection.name] = changes unless changes.blank?
   end
 
