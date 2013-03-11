@@ -124,7 +124,8 @@ That's a brief description of what this gem does. Here are the main methods that
 
 This project is way alpha right now, hence the "eat-my-babies" project name.
 
-1. `able_to_act_as_aggregate_root?` needs to actually do something more than return true.
+1. Implement `ClassValidator` which will correctly tell you if a class can be an aggregate root (e.g. are your associations wired up correctly?)
+2. Implement `ChangeValidator` that adds a little more niceness around `#aggregate_changes=`
 
 My main goal right now is to use the code as it exists for a while and deal with problems as they arise. Consider the entire gem incomplete for right now.
 
