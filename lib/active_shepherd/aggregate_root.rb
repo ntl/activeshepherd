@@ -24,6 +24,11 @@ module ActiveShepherd::AggregateRoot
   # Raises an ActiveShepherd::AggregateMismatchError if any objects in the
   #   aggregate are being asked to change attributes that do not exist.
   def aggregate_changes=(changes)
+    changes_errors = valid_aggregate_changes? changes, false
+    unless changes_errors.empty?
+      raise ActiveShepherd::InvalidChangesError, "changes hash is invalid: "\
+        "#{changes_errors.join(', ')}"
+    end
     ActiveShepherd::Methods::ApplyChanges.apply_changes aggregate, changes
   end
 
@@ -88,7 +93,7 @@ module ActiveShepherd::AggregateRoot
   #
   # Returns true if and only if the supplied changes pass muster.
   def valid_aggregate_changes?(changes, emit_boolean = true)
-    errors = ActiveShepherd::ChangeValidator.new(self).validate changes
+    errors = ActiveShepherd::ChangesValidator.new(self).validate changes
     emit_boolean ? errors.blank? : errors
   end
 

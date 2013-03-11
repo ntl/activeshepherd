@@ -3,6 +3,7 @@ module ActiveShepherd ; end
 require 'active_shepherd/active_record_shim'
 require 'active_shepherd/aggregate'
 require 'active_shepherd/aggregate_root'
+require 'active_shepherd/changes_validator'
 require 'active_shepherd/deep_reverse_changes'
 require 'active_shepherd/method'
 require 'active_shepherd/methods/apply_changes'
