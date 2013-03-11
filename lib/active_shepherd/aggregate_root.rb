@@ -8,10 +8,10 @@ module ActiveShepherd::AggregateRoot
   end
 
   # Private: returns the behind the scenes object that does all the work
-  def aggro
-    @aggro ||= ::ActiveShepherd::Aggregate.new(self)
+  def aggregate
+    @aggregate ||= ::ActiveShepherd::Aggregate.new(self)
   end
-  private :aggro
+  private :aggregate
   
   # Public: Given a serializable blob of changes (Hash, Array, and String)
   # objects, apply those changes to 
@@ -28,7 +28,7 @@ module ActiveShepherd::AggregateRoot
   # Raises an ActiveShepherd::AggregateMismatchError if any objects in the
   #   aggregate are being asked to change attributes that do not exist.
   def aggregate_changes=(changes)
-    ActiveShepherd::Methods::ApplyChanges.apply_changes aggro, changes
+    ActiveShepherd::Methods::ApplyChanges.apply_changes aggregate, changes
   end
 
   # Public: Reverses the effect of #aggregate_changes=
@@ -46,7 +46,7 @@ module ActiveShepherd::AggregateRoot
   #
   # Returns all changes in the aggregate
   def aggregate_changes
-    ActiveShepherd::Methods::QueryChanges.query_changes aggro
+    ActiveShepherd::Methods::QueryChanges.query_changes aggregate
   end
 
   # Public: Injects the entire state of the aggregate from a serializable blob.
@@ -59,7 +59,7 @@ module ActiveShepherd::AggregateRoot
   # Raises an AggregateMismatchError if the blob contains references to objects
   #   or attributes that do not exist in this aggregate.
   def aggregate_state=(blob)
-    ActiveShepherd::Methods::ApplyState.apply_state aggro, blob
+    ActiveShepherd::Methods::ApplyState.apply_state aggregate, blob
   end
 
   # Public: Returns the entire state of the aggregate as a serializable blob.
@@ -72,7 +72,7 @@ module ActiveShepherd::AggregateRoot
   #
   # Returns serializable blob.
   def aggregate_state
-    ActiveShepherd::Methods::QueryState.query_state aggro
+    ActiveShepherd::Methods::QueryState.query_state aggregate
   end
 
   # Public: Validates a set of changes for the aggregate root.
