@@ -64,9 +64,9 @@ module ActiveShepherd
         if traversable_association.present?
           associations[key] = [traversable_association, value]
         elsif aggregate.untraversable_association_names.include? key
-        elsif [:_create, :_destroy].include? key.to_sym
-          @meta_action = key.to_sym
-        else
+        elsif [:_create, :_destroy].include? key
+          @meta_action = key
+        elsif aggregate.raw_attributes.keys.include? key.to_s
           attributes[key] = value
         end
       end
