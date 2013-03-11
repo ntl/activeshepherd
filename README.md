@@ -1,7 +1,3 @@
-# WARNING: DANGER AHEAD!
-
-*This repo is titled "eat-my-babies" for a reason. It's essentially scratch code at this point.*
-
 # ActiveShepherd
 
 Is your app/models directory growing unweildy? Do you find yourself desiring the notion of aggregates to help corral your less important models under the umbrella of more important "business entities?" That's the problem I had that led me to write this gem. I wanted to be able to reason about an entire namespace of models as one thing; or an "aggregate" in enterprisey development parlance.
