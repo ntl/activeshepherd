@@ -12,7 +12,6 @@ class ActiveShepherd::Traversal
       visit :handle_attribute, attribute_name, object
     end
 
-    # XXX: no need for name here
     associations.each do |name, (reflection, object)|
       if reflection.macro == :has_many
         visit :handle_has_many_association, reflection, object
