@@ -9,7 +9,7 @@ module ActiveShepherd::AggregateRoot
 
   # Private: returns the behind the scenes object that does all the work
   def aggregate
-    @aggregate ||= ::ActiveShepherd::Aggregate.new(self)
+    @aggregate ||= ActiveShepherd::Aggregate.new(self)
   end
   private :aggregate
   
@@ -33,7 +33,7 @@ module ActiveShepherd::AggregateRoot
 
   # Public: Reverses the effect of #aggregate_changes=
   def reverse_aggregate_changes=(changes)
-    self.aggregate_changes = ::ActiveShepherd::DeepReverseChanges.new(changes).reverse
+    self.aggregate_changes = ActiveShepherd::DeepReverseChanges.new(changes).reverse
   end
 
   # Public: Returns the list of changes to the aggregate that would persist if
@@ -91,7 +91,7 @@ module ActiveShepherd::AggregateRoot
   #
   # Returns true if and only if the supplied changes pass muster.
   def valid_aggregate_changes?(changes, emit_boolean = true)
-    errors = ActiveShepherd::ChangeValidator.validate changes
+    errors = ActiveShepherd::ChangeValidator.new(self).validate changes
     emit_boolean ? errors.blank? : errors
   end
 
@@ -103,12 +103,16 @@ module ActiveShepherd::AggregateRoot
     #
     # In order for this method to return true, this model and its associated 
     # models are each checked rigorously to ensure they are wired up in a way
-    # that meets the requirements of an aggregate root. These requirements are:
+    # that meets the requirements of ActiveShepherd. These requirements are:
     #
-    #  * The root model is valid if and only if itself and all associated models
-    #    under its' namespace are valid. (:validate is true on the association)
+    #  * The root model autosaves all associated models in the aggregate.
+    #    (:autosave is true on the association)
+    #  * The root model validates all associated models in the aggregate.
+    #    (:validate is true on the association)
+    #  * Associated objects touch the root model when they are updated
     #  * When any root model is destroyed, all associated models in the
-    #    aggregate boundary are also destroyed. (:dependent => :destroy)
+    #    aggregate boundary are also destroyed, or else their references are
+    #    nullified. (:dependent => :destroy/:nullify)
     #  * The entire object constellation within the boundary can be traversed
     #    without accessing the persistence layer, providing they have all been
     #    eager loaded. (:inverse_of is set on the associations)
@@ -117,8 +121,9 @@ module ActiveShepherd::AggregateRoot
     #  * Any references to models outside this aggregate boundary are read-only.
     #
     # Returns true if and only if this model is an aggregate root.
-    def behave_like_an_aggregate?
-      ::ActiveShepherd::ClassValidator.new(self).valid?
+    def behave_like_an_aggregate?(emit_boolean = true)
+      errors = ActiveShepherd::ClassValidator.new(self).validate
+      emit_boolean ? errors.blank? : errors
     end
   end
 end
