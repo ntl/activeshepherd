@@ -120,20 +120,28 @@ module ActiveShepherd::AggregateRoot
     # models are each checked rigorously to ensure they are wired up in a way
     # that meets the requirements of ActiveShepherd. These requirements are:
     #
-    #  * The root model autosaves all associated models in the aggregate.
-    #    (:autosave is true on the association)
-    #  * The root model validates all associated models in the aggregate.
-    #    (:validate is true on the association)
-    #  * Associated objects touch the root model when they are updated
-    #  * When any root model is destroyed, all associated models in the
-    #    aggregate boundary are also destroyed, or else their references are
-    #    nullified. (:dependent => :destroy/:nullify)
-    #  * The entire object constellation within the boundary can be traversed
-    #    without accessing the persistence layer, providing they have all been
-    #    eager loaded. (:inverse_of is set on the associations)
-    #  * All models under the namespace of the root model are only referenced
-    #    inside this aggregate boundary.
-    #  * Any references to models outside this aggregate boundary are read-only.
+    #  * All models in the namespace defined by the root itself are visible to
+    #    associations that meet this criteria:
+    #    * The root model autosaves all associated models in the aggregate.
+    #      (:autosave is true on the association)
+    #    * The root model validates all associated models in the aggregate.
+    #      (:validate is true on the association)
+    #    * Associated objects touch the root model when they are updated
+    #      (:touch is true on the association)
+    #    * When any root model is destroyed, all associated models in the
+    #      aggregate boundary are also destroyed, or else their references are
+    #      nullified. (:dependent => :destroy/:nullify)
+    #    * The entire object constellation within the boundary can be traversed
+    #      without accessing the persistence layer, providing they have all been
+    #      eager loaded. (:inverse_of is set on the associations)
+    #    * If the association references any external aggregate root, then
+    #      when that root is deleted, then either the associations reference
+    #      must be nullified, or else the associated model itself must be
+    #      deleted.
+    #  * All models within the aggregate are only referenced inside this
+    #    aggregate boundary, with the exception of the root itself.
+    #  * Any model in the namespace of the root that has its own sub namespace
+    #    under it is recursively checked.
     #
     # Returns true if and only if this model is an aggregate root.
     def behave_like_an_aggregate?(emit_boolean = true)
