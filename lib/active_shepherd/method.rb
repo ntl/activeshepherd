@@ -68,6 +68,9 @@ module ActiveShepherd
           @meta_action = key
         elsif aggregate.raw_attributes.keys.include? key.to_s
           attributes[key] = value
+        else
+          raise ActiveShepherd::AggregateMismatchError, "Attribute `#{key}' "\
+            "invalid for `#{aggregate.model.class.name}'"
         end
       end
     end
