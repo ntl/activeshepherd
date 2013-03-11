@@ -10,7 +10,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["nathanladd+github@gmail.com"]
   gem.description   = %q{Wrangle unweildy app/models directories by unobtrusively adding the aggregate pattern into ActiveRecord}
   gem.summary       = %q{Wrangle unweildy app/models directories with aggregates}
-  gem.homepage      = "http://github.com/ntl/eat_my_babies"
+  gem.homepage      = "http://github.com/ntl/activeshepherd"
   gem.license       = "MIT"
 
   gem.files         = `git ls-files`.split($/)
