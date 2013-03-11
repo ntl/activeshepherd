@@ -24,11 +24,14 @@ module ActiveShepherd::AggregateRoot
   # Raises an ActiveShepherd::AggregateMismatchError if any objects in the
   #   aggregate are being asked to change attributes that do not exist.
   def aggregate_changes=(changes)
-    changes_errors = valid_aggregate_changes? changes, false
+    changes_errors = ActiveShepherd::ChangesValidator.new(self).validate changes
     unless changes_errors.empty?
       raise ActiveShepherd::InvalidChangesError, "changes hash is invalid: "\
         "#{changes_errors.join(', ')}"
     end
+    # The validation process actually runs the changes internally. This means
+    # we don't have to explicitly invoke # #apply_changes here.
+    # XXX: remove when ChangesValidator does this
     ActiveShepherd::Methods::ApplyChanges.apply_changes aggregate, changes
   end
 
@@ -76,6 +79,13 @@ module ActiveShepherd::AggregateRoot
     ActiveShepherd::Methods::QueryState.query_state aggregate
   end
 
+  # Public: Reloads the entire aggregate by invoking #reload on each of the
+  # records in the aggregate.
+  def reload_aggregate
+    reload
+    raise "NYI"
+  end
+
   # Public: Validates a set of changes for the aggregate root.
   #
   #  * Does deep_reverse(deep_reverse(changes)) == changes?
@@ -93,8 +103,11 @@ module ActiveShepherd::AggregateRoot
   #
   # Returns true if and only if the supplied changes pass muster.
   def valid_aggregate_changes?(changes, emit_boolean = true)
-    errors = ActiveShepherd::ChangesValidator.new(self).validate changes
+    validator = ActiveShepherd::ChangesValidator.new(self)
+    errors = validator.validate changes
     emit_boolean ? errors.blank? : errors
+  ensure
+    reload_aggregate
   end
 
   module ClassMethods
