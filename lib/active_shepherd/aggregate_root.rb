@@ -77,8 +77,9 @@ module ActiveShepherd::AggregateRoot
 
   # Public: Validates a set of changes for the aggregate root.
   #
-  #  * If the changes were applied, would the aggregate be valid?
   #  * Does deep_reverse(deep_reverse(changes)) == changes?
+  #  * Assuming the model is currently valid, if the changes were applied,
+  #    would the aggregate be valid?
   #  * If I apply the changes, and then apply deep_reverse(changes), does
   #    #aggregate_state change?
   #
