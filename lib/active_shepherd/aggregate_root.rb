@@ -90,8 +90,9 @@ module ActiveShepherd::AggregateRoot
   #   # => true
   #
   # Returns true if and only if the supplied changes pass muster.
-  def valid_aggregate_changes?(changes)
-    aggro.valid_changes?(changes)
+  def valid_aggregate_changes?(changes, emit_boolean = true)
+    errors = ActiveShepherd::ChangeValidator.validate changes
+    emit_boolean ? errors.blank? : errors
   end
 
   module ClassMethods
