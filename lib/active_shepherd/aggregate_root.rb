@@ -17,10 +17,10 @@ module ActiveShepherd::AggregateRoot
   #   @project.aggregate_changes = { name: ["Clean House", "Clean My House"] }
   #
   # Returns nothing.
-  # Raises ActiveShepherd::BadChangeError if a particular attribute change is 
-  #   not a two element array.
   # Raises ActiveShepherd::InvalidChangesError if the changes supplied do not
   #   pass #valid_aggregate_changes? (see below)
+  # Raises ActiveShepherd::BadChangeError if a particular attribute change
+  #   cannot be applied.
   # Raises an ActiveShepherd::AggregateMismatchError if any objects in the
   #   aggregate are being asked to change attributes that do not exist.
   def aggregate_changes=(changes)
