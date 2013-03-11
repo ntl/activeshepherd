@@ -21,45 +21,32 @@ class ActiveShepherd::Methods
       aggregate.model.send "#{attribute_name}=", after
     end
 
-    def handle_has_many_association(reflection, changes_to_collection)
-      apply_changes_to_has_many_association reflection, changes_to_collection
+    def handle_has_many_association(reflection, collection_changes)
+      apply_changes_to_has_many_association reflection, collection_changes
     end
 
     def handle_has_one_association(reflection, changes)
-      apply_changes_to_associated_model(
-        aggregate.model.public_send(reflection.name),
-        reflection.foreign_key,
-        changes,
-      )
+      associated_model = aggregate.model.public_send reflection.name
+      recurse(associated_model, reflection.foreign_key).changes = changes
     end
 
   private
 
-    def apply_changes_to_has_many_association(association_reflection, changes_set)
-      association = aggregate.model.send(association_reflection.name)
+    def apply_changes_to_has_many_association(reflection, collection_changes)
+      association = aggregate.model.send reflection.name
 
-      changes_set.each do |index, changes|
+      collection_changes.each do |index, changes|
         # FIXME
         association.build until association.size >= (index + 1)
         # /FIXME
 
         associated_model = association[index]
-
         if associated_model.nil?
           raise ::ActiveShepherd::AggregateRoot::BadChangeError,
             "Can't find record ##{index}"
         end
-
-        apply_changes_to_associated_model(
-          associated_model,
-          association_reflection.foreign_key,
-          changes,
-        )
+        recurse(associated_model, reflection.foreign_key).changes = changes
       end
-    end
-
-    def apply_changes_to_associated_model(model, foreign_key, changes)
-      ActiveShepherd::Aggregate.new(model, foreign_key).changes = changes
     end
   end
 
@@ -78,10 +65,7 @@ class ActiveShepherd::Methods
       association = aggregate.model.send reflection.name
 
       collection_changes = association.each.with_object({}).with_index do |(associated_model, h), index|
-        changes = get_changes_from_associated_model(
-          associated_model,
-          reflection.foreign_key,
-        )
+        changes = recurse(associated_model, reflection.foreign_key).changes
         h[index] = changes unless changes.blank?
       end
 
@@ -94,10 +78,7 @@ class ActiveShepherd::Methods
       associated_model = aggregate.model.send reflection.name
       return unless associated_model.present?
 
-      changes = get_changes_from_associated_model(
-        associated_model,
-        reflection.foreign_key,
-      )
+      changes = recurse(associated_model, reflection.foreign_key).changes
       query[reflection.name] = changes unless changes.blank?
     end
 
@@ -112,10 +93,6 @@ class ActiveShepherd::Methods
     end
 
   private
-
-    def get_changes_from_associated_model(model, foreign_key)
-      ActiveShepherd::Aggregate.new(model, foreign_key).changes
-    end
 
     def set_meta_action
       if not aggregate.model.persisted?
@@ -139,7 +116,7 @@ class ActiveShepherd::Methods
     def handle_has_many_association(reflection)
       association = aggregate.model.send reflection.name
       collection_state = association.map do |associated_model|
-        get_state_from_associated_model associated_model, reflection.foreign_key
+        recurse(associated_model, reflection.foreign_key).state
       end
       query[reflection.name] = collection_state unless collection_state.blank?
     end
@@ -147,10 +124,7 @@ class ActiveShepherd::Methods
     def handle_has_one_association(reflection)
       associated_model = aggregate.model.send reflection.name
       if associated_model
-        state = get_state_from_associated_model(
-          associated_model,
-          reflection.foreign_key,
-        )
+        state = recurse(associated_model, reflection.foreign_key).state
         query[reflection.name] = state unless state.blank?
       end
     end
@@ -164,12 +138,6 @@ class ActiveShepherd::Methods
           h[name.to_sym] = value
         end
       end
-    end
-
-  private
-
-    def get_state_from_associated_model(model, foreign_key)
-      ActiveShepherd::Aggregate.new(model, foreign_key).state
     end
   end
 
@@ -188,21 +156,14 @@ class ActiveShepherd::Methods
     def handle_has_many_association(reflection, collection_state)
       association = aggregate.model.send reflection.name
       collection_state.each do |state|
-        apply_state_to_associated_model(
-          association.build,
-          reflection.foreign_key,
-          state,
-        )
+        associated_model = association.build
+        recurse(associated_model, reflection.foreign_key).state = state
       end
     end
 
     def handle_has_one_association(reflection, state)
       associated_model = aggregate.model.send "build_#{reflection.name}"
-      apply_state_to_associated_model(
-        associated_model,
-        reflection.foreign_key,
-        state,
-      )
+      recurse(associated_model, reflection.foreign_key).state = state
     end
 
   private
@@ -223,10 +184,6 @@ class ActiveShepherd::Methods
 
         aggregate.model.send("#{attribute_name}=", default_value)
       end
-    end
-
-    def apply_state_to_associated_model(associated_model, foreign_key, state)
-      ActiveShepherd::Aggregate.new(associated_model, foreign_key).state = state
     end
 
     def mark_all_associated_objects_for_destruction

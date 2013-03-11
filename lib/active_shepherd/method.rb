@@ -20,6 +20,10 @@ class ActiveShepherd::Method
     setup *args
   end
 
+  def recurse(model, foreign_key)
+    ActiveShepherd::Aggregate.new model, foreign_key
+  end
+
   def traverse!
     ActiveShepherd::Traversal.new(
       self,
