@@ -39,7 +39,12 @@ ActiveRecord::Migration.create_table :project_todo_assignments, force: true do |
 end
 
 
-User = Class.new(ActiveRecord::Base)
+class User < ActiveRecord::Base
+  act_as_aggregate_root!
+
+  has_many :projects, inverse_of: :owner, dependent: :destroy, autosave: true,
+    validate: true, foreign_key: :owner_id
+end
 
 class Comment < ActiveRecord::Base
   belongs_to :commentable, polymorphic: true, counter_cache: true
@@ -49,7 +54,7 @@ end
 class Project < ActiveRecord::Base
   act_as_aggregate_root!
 
-  belongs_to :owner, class_name: "User"
+  belongs_to :owner, class_name: "User", inverse_of: :projects, touch: true
 
   has_one :detail, inverse_of: :project, dependent: :destroy, autosave: true
 

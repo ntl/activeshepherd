@@ -296,6 +296,17 @@ class IntegrationTest < MiniTest::Unit::TestCase
     assert_equal :mango, @project.fruit
   end
 
+  def test_changes_to_one_aggregate_do_not_include_associated_aggregate
+    build_persisted_state
+
+    @owner = User.create! name: 'Joe Schmoe'
+    @project.owner = @owner
+    @project.save!
+    @owner.reload
+
+    refute @owner.aggregate_state.has_key?(:projects)
+  end
+
 private
 
   # Test 'changes' behavior with this common background

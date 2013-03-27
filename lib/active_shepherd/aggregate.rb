@@ -33,6 +33,19 @@ class ActiveShepherd::Aggregate
     run_through_serializer(attribute_name, value, :load)
   end
 
+  def in_namespace?(name)
+    my_namespace = model.class.to_s
+    if name == my_namespace
+      false
+    elsif name.deconstantize == my_namespace
+      true
+    elsif name.deconstantize == my_namespace.deconstantize && !name.deconstantize.blank?
+      true
+    else
+      false
+    end
+  end
+
 private
 
   def associations
@@ -62,6 +75,7 @@ private
   def traverse_association?(association)
     return false if association.options[:readonly]
     return false if association.macro == :belongs_to
+    return false unless in_namespace?(association.klass.to_s)
 
     true
   end
