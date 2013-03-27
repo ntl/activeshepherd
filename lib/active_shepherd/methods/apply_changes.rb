@@ -12,7 +12,7 @@ class ActiveShepherd::Methods::ApplyChanges < ActiveShepherd::ApplyMethod
     after  = aggregate.deserialize_value(attribute_name, after)
 
     unless current_value == before
-      raise ::ActiveShepherd::AggregateRoot::BadChangeError, "Expecting "\
+      raise ::ActiveShepherd::BadChangeError, "Expecting "\
         "`#{attribute_name} to be `#{before.inspect}', not "\
         "`#{current_value.inspect}'"
     end
@@ -42,7 +42,7 @@ private
 
       associated_model = association[index]
       if associated_model.nil?
-        raise ::ActiveShepherd::AggregateRoot::BadChangeError,
+        raise ::ActiveShepherd::BadChangeError,
           "Can't find record ##{index}"
       end
       self.class.apply_changes recurse(associated_model, reflection.foreign_key),
