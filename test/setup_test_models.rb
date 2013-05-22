@@ -1,5 +1,6 @@
 ActiveRecord::Migration.create_table :users, force: true do |t|
   t.string :name
+  t.belongs_to :favorite_project
 end
 
 ActiveRecord::Migration.create_table :comments, force: true do |t|
@@ -44,6 +45,7 @@ class User < ActiveRecord::Base
 
   has_many :projects, inverse_of: :owner, dependent: :destroy, autosave: true,
     validate: true, foreign_key: :owner_id
+  belongs_to :favorite_project, class_name: "Project"
 end
 
 class Comment < ActiveRecord::Base
@@ -55,6 +57,8 @@ class Project < ActiveRecord::Base
   act_as_aggregate_root!
 
   belongs_to :owner, class_name: "User", inverse_of: :projects, touch: true
+  has_many :watchers, inverse_of: :favorite_project, class_name: "User",
+    foreign_key: :favorite_project_id
 
   has_one :detail, inverse_of: :project, dependent: :destroy, autosave: true
 

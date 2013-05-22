@@ -50,9 +50,9 @@ private
 
   def associations
     @associations ||= begin
-      all_associations = model.class.reflect_on_all_associations
       ostruct = OpenStruct.new untraversable: {}, traversable: {}
-      all_associations.each_with_object(ostruct) do |association_reflection, ostruct|
+      associations_by_table.each_with_object(ostruct) do |(table, associations), ostruct|
+        association_reflection = preferred_association_from_set associations
         if traverse_association?(association_reflection)
           key = :traversable
         else
@@ -61,6 +61,24 @@ private
         ostruct.send(key)[association_reflection.name] = association_reflection
       end
     end
+  end
+
+  def associations_by_table
+    @associations_by_table ||=
+      begin
+        by_table = Hash.new { |h,k| h[k] = Array.new }
+        model.class.reflect_on_all_associations.each do |association_reflection, hash|
+          next unless association_reflection.active_record == model.class
+          if traverse_association? association_reflection
+            by_table[association_reflection.table_name] << association_reflection
+          end
+        end
+        by_table
+      end
+  end
+
+  def preferred_association_from_set(associations)
+    associations.detect { |a| a.macro == :has_many } || associations.first
   end
 
   def run_through_serializer(attribute_name, value, method)
@@ -76,6 +94,7 @@ private
     return false if association.options[:readonly]
     return false if association.macro == :belongs_to
     return false unless in_namespace?(association.klass.to_s)
+    return false if association.is_a?(ActiveRecord::Reflection::ThroughReflection)
 
     true
   end

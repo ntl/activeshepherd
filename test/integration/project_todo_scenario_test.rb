@@ -118,9 +118,9 @@ class IntegrationTest < MiniTest::Unit::TestCase
   end
 
   def test_does_not_walk_associations_to_other_entities
-    @project.aggregate_state = { owner: { name: "Joe Schmoe" } }
-
-    refute_equal "Joe Schmoe", @project.owner.try(:name)
+    assert_raises ActiveShepherd::AggregateMismatchError do
+      @project.aggregate_state = { owner: { name: "Joe Schmoe" } }
+    end
   end
 
 =begin
