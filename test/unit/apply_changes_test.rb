@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ApplyChangesTest < MiniTest::Unit::TestCase
+class ApplyChangesTest < Minitest::Test
   def setup
     @aggregate = OpenStruct.new(
       raw_attributes: {},

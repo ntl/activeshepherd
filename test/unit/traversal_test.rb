@@ -1,4 +1,4 @@
 require 'test_helper'
 
-class TraversalTest < MiniTest::Unit::TestCase
+class TraversalTest < Minitest::Test
 end

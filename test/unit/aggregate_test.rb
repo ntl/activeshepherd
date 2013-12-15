@@ -4,7 +4,7 @@ class MyKlass
   SubKlass = Class.new
 end
 
-class AggregateTest < MiniTest::Unit::TestCase
+class AggregateTest < Minitest::Test
   def setup
     @aggregate = ActiveShepherd::Aggregate.new Project.new
   end

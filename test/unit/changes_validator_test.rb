@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ChangesValidatorTest < MiniTest::Unit::TestCase
+class ChangesValidatorTest < Minitest::Test
   def test_deep_reverse_returns_self
     skip
   end

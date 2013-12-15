@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class IntegrationTest < MiniTest::Unit::TestCase
+class IntegrationTest < Minitest::Test
   def setup
     Project.destroy_all
 

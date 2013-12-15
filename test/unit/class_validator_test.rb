@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ClassValidatorTest < MiniTest::Unit::TestCase
+class ClassValidatorTest < Minitest::Test
   def test_model_must_autosave_associations
     skip
   end
